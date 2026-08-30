@@ -1,0 +1,6 @@
+{
+  "name": "ELZZUP",
+  "description": "A clever pixel-art puzzle game that trolls the player with glitchy surprises and backwards logic.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

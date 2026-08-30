@@ -1,0 +1,319 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-surface: #1a1a3a;
+    --color-surface-lowest: #0c0c1e;
+    --color-surface-container: #2a2a4a;
+    --color-surface-high: #3a3a6a;
+    --color-surface-highest: #4a4a8a;
+    --color-primary: #ffdd00;
+    --color-primary-light: #fff380;
+    --color-secondary: #ff4444;
+    --color-secondary-light: #ff8888;
+    --color-tertiary: #44ff44;
+    --color-tertiary-light: #aaffaa;
+    --color-error: #ff4444;
+  }
+
+  body {
+    font-family: 'Press Start 2P', 'Space Mono', 'JetBrains Mono', monospace;
+    background-color: var(--color-surface-lowest);
+    color: #f0f0ff;
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Press Start 2P', cursive;
+  }
+
+  .font-mono-code {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .font-pixel {
+    font-family: 'Press Start 2P', 'VT323', monospace;
+  }
+
+  .font-arcade {
+    font-family: 'Press Start 2P', cursive;
+  }
+}
+
+/* ================= PIXEL ART ENVIRONMENT & DUNGEON TEXTURES ================= */
+
+/* Authentic Pixel Dungeon/Facility Tile Floor Pattern */
+.pixel-tile-bg {
+  background-color: #0c0c1e;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.8) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 2px, transparent 2px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px, 16px 16px, 16px 16px;
+  background-position: 0 0, 0 0, 0 0, 0 0;
+  image-rendering: pixelated;
+}
+
+/* Facility Wall Panels & Rivets (Low Contrast Atmosphere) */
+.pixel-facility-wall {
+  background-color: #0d0d22;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.7) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 2px, transparent 2px),
+    radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
+  background-size: 64px 64px, 64px 64px, 32px 32px;
+  background-position: 0 0, 0 0, 16px 16px;
+  image-rendering: pixelated;
+}
+
+/* Grounded Pixel Grid Floor */
+.pixel-chamber-floor {
+  background-color: #0a0a1a;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.85) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.85) 2px, transparent 2px),
+    linear-gradient(rgba(255, 221, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 221, 0, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px, 20px 20px, 20px 20px;
+  image-rendering: pixelated;
+}
+
+/* Background Geometric Dot Matrix */
+.geo-dots-bg {
+  background-color: #0c0c1e;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.8) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 2px, transparent 2px),
+    radial-gradient(rgba(255, 221, 0, 0.08) 1.5px, transparent 0);
+  background-size: 32px 32px, 32px 32px, 32px 32px;
+  image-rendering: pixelated;
+}
+
+/* Low-contrast Pixel Conduit Pipe */
+.pixel-conduit-h {
+  height: 8px;
+  background: #14142b;
+  border-top: 2px solid #222248;
+  border-bottom: 2px solid #080812;
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.4);
+}
+
+.pixel-conduit-v {
+  width: 8px;
+  background: #14142b;
+  border-left: 2px solid #222248;
+  border-right: 2px solid #080812;
+  box-shadow: 4px 0 0 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Subtle Industrial Vent Grate */
+.pixel-vent-grate {
+  background: repeating-linear-gradient(
+    0deg,
+    #0a0a18,
+    #0a0a18 4px,
+    #181838 4px,
+    #181838 8px
+  );
+  border: 2px solid #000;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.8);
+}
+
+/* Subtle Hazard Stripe Trim */
+.pixel-hazard-strip {
+  background: repeating-linear-gradient(
+    -45deg,
+    #1a1a3a,
+    #1a1a3a 8px,
+    #ffdd00 8px,
+    #ffdd00 16px
+  );
+}
+
+/* Low-Contrast Background CRT Monitor */
+.pixel-bg-monitor {
+  background-color: #060610;
+  border: 2px solid #000;
+  box-shadow: inset 0 0 8px rgba(0, 240, 255, 0.15), 2px 2px 0 #000;
+}
+
+/* Keyframes for atmospheric blinking lights */
+@keyframes led-blink-slow {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 4px currentColor); }
+  50% { opacity: 0.25; filter: none; }
+}
+
+@keyframes led-blink-fast {
+  0%, 100% { opacity: 0.9; }
+  30% { opacity: 0.2; }
+  60% { opacity: 0.9; }
+}
+
+@keyframes mascot-blink-cycle {
+  0%, 94%, 100% { transform: scaleY(1); }
+  96%, 98% { transform: scaleY(0.1); }
+}
+
+.animate-led-slow {
+  animation: led-blink-slow 3.5s infinite ease-in-out;
+}
+
+.animate-led-fast {
+  animation: led-blink-fast 1.8s infinite steps(2, start);
+}
+
+.animate-mascot-eye {
+  animation: mascot-blink-cycle 4.5s infinite;
+  transform-origin: center;
+}
+
+/* Authentic Pixel Art Chunky Corner Borders */
+.pixel-box {
+  border: 4px solid #000000;
+  box-shadow: 
+    inset -4px -4px 0px 0px rgba(0, 0, 0, 0.5),
+    inset 4px 4px 0px 0px rgba(255, 255, 255, 0.2),
+    4px 4px 0px 0px #000000;
+  image-rendering: pixelated;
+}
+
+.pixel-box-gold {
+  border: 4px solid #000000;
+  box-shadow: 
+    inset -4px -4px 0px 0px #bb9900,
+    inset 4px 4px 0px 0px #ffffaa,
+    6px 6px 0px 0px #000000;
+}
+
+.pixel-box-red {
+  border: 4px solid #000000;
+  box-shadow: 
+    inset -4px -4px 0px 0px #990000,
+    inset 4px 4px 0px 0px #ffaaaa,
+    6px 6px 0px 0px #000000;
+}
+
+/* Pixel Stepped Shadow (8-bit stepped depth) */
+.pixel-shadow {
+  box-shadow: 4px 4px 0px 0px #000000, 8px 8px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.pixel-shadow-sm {
+  box-shadow: 2px 2px 0px 0px #000000;
+}
+
+/* CRT Scanlines Overlay */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(12, 12, 30, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
+              linear-gradient(90deg, rgba(255, 221, 0, 0.02), rgba(0, 0, 0, 0.02), rgba(255, 68, 68, 0.02));
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+  z-index: 99;
+}
+
+/* CRT Screen Vignette */
+.crt-vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.8) 100%);
+  pointer-events: none;
+  z-index: 98;
+}
+
+/* Geometric Balance Hard-Edge Boxes */
+.geo-box {
+  border: 4px solid #000000;
+  box-shadow: 4px 4px 0 0 #000000;
+}
+
+.geo-box-lg {
+  border: 8px solid #000000;
+  box-shadow: 0 12px 0 0 #000000;
+}
+
+.geo-box-primary {
+  border: 4px solid #000000;
+  box-shadow: 4px 4px 0 0 #ffdd00;
+}
+
+.geo-box-secondary {
+  border: 4px solid #000000;
+  box-shadow: 4px 4px 0 0 #ff4444;
+}
+
+/* Chromatic Aberration & Glitch Keyframes */
+@keyframes glitch-anim-1 {
+  0% { clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%); transform: translate(0); }
+  15% { clip-path: polygon(0 15%, 100% 15%, 100% 30%, 0 30%); transform: translate(-3px, 1px); }
+  35% { clip-path: polygon(0 45%, 100% 45%, 100% 60%, 0 60%); transform: translate(3px, -1px); }
+  65% { clip-path: polygon(0 75%, 100% 75%, 100% 85%, 0 85%); transform: translate(-2px, 2px); }
+  85% { clip-path: polygon(0 90%, 100% 90%, 100% 100%, 0 100%); transform: translate(2px, -2px); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: translate(0); }
+}
+
+@keyframes glitch-shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-2px, 2px) rotate(-0.5deg); }
+  40% { transform: translate(2px, -1px) rotate(0.5deg); }
+  60% { transform: translate(-1px, -2px) rotate(0deg); }
+  80% { transform: translate(2px, 1px) rotate(-0.5deg); }
+}
+
+.glitch-hover:hover {
+  animation: glitch-shake 0.2s infinite;
+}
+
+.text-glitch {
+  position: relative;
+  display: inline-block;
+}
+
+.text-glitch::before,
+.text-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.text-glitch::before {
+  left: 2px;
+  text-shadow: -2px 0 #ff4444;
+  animation: glitch-anim-1 3s infinite linear alternate-reverse;
+}
+
+.text-glitch::after {
+  left: -2px;
+  text-shadow: 2px 0 #ffdd00;
+  animation: glitch-anim-1 2s infinite linear alternate-reverse;
+}
+
+/* Custom Pixel Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0c0c1e;
+  border: 2px solid #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #ffdd00;
+  border: 2px solid #000000;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #fff380;
+}
+
