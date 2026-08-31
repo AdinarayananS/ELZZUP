@@ -301,6 +301,11 @@
 }
 
 /* Custom Pixel Scrollbar */
+@keyframes cooldownBar {
+  0% { width: 100%; }
+  100% { width: 0%; }
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

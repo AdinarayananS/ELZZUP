@@ -3,12 +3,14 @@ import { RoomHeader } from './RoomHeader';
 import { SuccessOverlay } from './SuccessOverlay';
 import { TrollOverlay } from './TrollOverlay';
 import { PauseOverlay } from './PauseOverlay';
+import { AntiSpamOverlay } from './AntiSpamOverlay';
 import { PixelButton } from './PixelButton';
 import { MascotMood } from './Logo';
 import { getRoomById, TOTAL_ROOMS } from '../rooms/RoomRegistry';
 import { GameSettings, OverlayType, OverlayData } from '../types';
 import { RotateCcw, Lightbulb, X } from 'lucide-react';
 import { sound } from '../audio';
+import { useAntiSpam } from '../hooks/useAntiSpam';
 
 interface GameScreenProps {
   currentRoomId: number;
@@ -65,15 +67,6 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const reactionTimeoutRef = useRef<number | null>(null);
   const roomDef = getRoomById(currentRoomId);
 
-  // Determine ELZZUP's mood based on floor progression
-  const getMascotMood = (): MascotMood => {
-    if (isGlitching) return 'glitched';
-    if (currentRoomId <= 3) return 'smug';
-    if (currentRoomId <= 7) return 'suspicious';
-    if (currentRoomId <= 9) return 'worried';
-    return 'worried';
-  };
-
   // Helper to trigger a short ELZZUP remark
   const triggerReaction = (text: string, durationMs = 2800) => {
     if (reactionTimeoutRef.current) {
@@ -84,6 +77,29 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       setElzzupReaction(null);
       reactionTimeoutRef.current = null;
     }, durationMs);
+  };
+
+  // Anti-Spam Hidden Interaction Monitor
+  const antiSpam = useAntiSpam({
+    soundEnabled: settings.sound,
+    onTriggerGlitch: () => {
+      setIsGlitching(true);
+      setTimeout(() => setIsGlitching(false), 350);
+    },
+    onMascotReaction: (text: string, durationMs = 2400) => {
+      triggerReaction(text, durationMs);
+    },
+    enabled: overlay === 'none',
+  });
+
+  // Determine ELZZUP's mood based on floor progression and anti-spam detection
+  const getMascotMood = (): MascotMood => {
+    if (isGlitching || antiSpam.isLockedOut || antiSpam.moderateGlitchActive) return 'glitched';
+    if (antiSpam.spamScore >= 3.5) return 'suspicious';
+    if (currentRoomId <= 3) return 'smug';
+    if (currentRoomId <= 7) return 'suspicious';
+    if (currentRoomId <= 9) return 'worried';
+    return 'worried';
   };
 
   // Subtle reaction when entering a new room
@@ -124,6 +140,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setOverlay('none');
     setShowHint(false);
     setIsGlitching(false);
+    antiSpam.resetSpam();
     sound.playClick(settings.sound);
 
     if (nextResets === 1) {
@@ -138,6 +155,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   // Handle Success trigger from room
   const handleSuccess = (customTitle?: string, customSubtitle?: string) => {
     if (!roomDef) return;
+    antiSpam.resetSpam();
     if (elapsedSeconds <= 4 && currentRoomId > 1) {
       triggerReaction('Oh.');
     }
@@ -151,6 +169,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   // Handle Troll / Failure trigger from room
   const handleTroll = (title?: string, message?: string, errCode?: string) => {
     if (!roomDef) return;
+    antiSpam.resetSpam();
     const newErrorCount = roomErrors + 1;
     setRoomErrors(newErrorCount);
     setIsGlitching(true);
@@ -185,6 +204,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setOverlay('none');
     setResetCount(0);
     setRoomErrors(0);
+    antiSpam.resetSpam();
     onRoomComplete(currentRoomId);
   };
 
@@ -286,7 +306,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
 
         {/* Puzzle Room Viewport */}
-        <div className="relative z-10 w-full max-w-4xl flex-1 min-h-[320px] sm:min-h-[380px] md:min-h-[420px] border-4 border-black bg-[#161632] shadow-[6px_6px_0_0_#000] overflow-hidden group">
+        <div
+          onClickCapture={antiSpam.handleGlobalClick}
+          className={`relative z-10 w-full max-w-4xl flex-1 min-h-[320px] sm:min-h-[380px] md:min-h-[420px] border-4 border-black bg-[#161632] shadow-[6px_6px_0_0_#000] overflow-hidden group ${
+            antiSpam.moderateGlitchActive ? 'filter drop-shadow-[0_0_8px_rgba(255,221,0,0.5)]' : ''
+          }`}
+        >
           {/* Subtle Chamber Ambient Lighting Vignette */}
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.55)_100%)] z-10" />
 
@@ -296,6 +321,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             onSuccess={handleSuccess}
             onTroll={handleTroll}
             soundEnabled={settings.sound}
+          />
+
+          {/* Anti-Spam Hidden Interaction Reaction & Lockout Overlay */}
+          <AntiSpamOverlay
+            isLockedOut={antiSpam.isLockedOut}
+            lockoutMessage={antiSpam.lockoutMessage}
+            spamToastMessage={antiSpam.spamToastMessage}
+            moderateGlitchActive={antiSpam.moderateGlitchActive}
           />
         </div>
 
