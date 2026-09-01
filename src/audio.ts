@@ -88,21 +88,71 @@ class SoundEngine {
   }
 
   private lastMemeLaughTime = 0;
+  private memeAudio: HTMLAudioElement | null = null;
+
+  private initMemeAudio() {
+    if (typeof window === 'undefined') return;
+    if (!this.memeAudio) {
+      try {
+        this.memeAudio = new Audio('/audio/elzzup-laugh.mp3');
+        this.memeAudio.preload = 'auto';
+      } catch {
+        this.memeAudio = null;
+      }
+    }
+  }
 
   playTroll(soundEnabled = true, volume = 0.8) {
     if (!soundEnabled) return;
     this.playMemeLaugh(soundEnabled, volume);
   }
 
+  stopLaugh() {
+    if (this.memeAudio) {
+      try {
+        this.memeAudio.pause();
+        this.memeAudio.currentTime = 0;
+      } catch {
+        // safe
+      }
+    }
+  }
+
   playMemeLaugh(soundEnabled = true, volume = 0.85) {
     if (!soundEnabled) return;
     const now = Date.now();
-    // Anti-spam debounce: Prevent stacking multiple laughs on rapid clicks within 650ms
-    if (now - this.lastMemeLaughTime < 650) {
+    // Anti-spam debounce: Prevent stacking multiple laughs on rapid clicks within 700ms
+    if (now - this.lastMemeLaughTime < 700) {
       return;
     }
     this.lastMemeLaughTime = now;
 
+    this.initMemeAudio();
+
+    // 1. Try playing the exact "HAha funny laugh" meme sound asset
+    if (this.memeAudio) {
+      try {
+        this.memeAudio.currentTime = 0;
+        this.memeAudio.volume = Math.max(0, Math.min(1, volume * 0.95));
+        const playPromise = this.memeAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // If browser autoplay policies or audio error occurs, fallback immediately to synth
+            this.playSynthLaugh(soundEnabled, volume);
+          });
+          return;
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    // 2. Immediate Web Audio Fallback
+    this.playSynthLaugh(soundEnabled, volume);
+  }
+
+  playSynthLaugh(soundEnabled = true, volume = 0.85) {
+    if (!soundEnabled) return;
     this.initContext();
     if (!this.ctx) return;
 

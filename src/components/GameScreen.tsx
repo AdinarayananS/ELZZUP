@@ -171,6 +171,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     customSubtitle?: string
   ) => {
     if (!roomDef) return;
+    // Stop any active laugh immediately on success/victory
+    sound.stopLaugh();
     antiSpam.resetSpam();
     if (elapsedSeconds <= 4 && currentRoomId > 1) {
       triggerReaction('Oh.');
@@ -193,55 +195,60 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setOverlay('success');
   };
 
-  // Centralized Global Wrong-Answer / Troll Reaction System
+  // Centralized Global Wrong-Answer / Failure Laugh & Insult Reaction System (Floors 1-20)
   const handleTroll = (title?: string, message?: string, errCode?: string) => {
     if (!roomDef) return;
     antiSpam.resetSpam();
     const newErrorCount = roomErrors + 1;
     setRoomErrors(newErrorCount);
 
-    // 1. Brief glitch/shake effect
+    // 1. Brief pixel error / screen shake effect
     setIsGlitching(true);
-    setTimeout(() => setIsGlitching(false), 380);
+    setTimeout(() => setIsGlitching(false), 420);
 
-    // 2. Play the global meme laugh (with automatic spam/stacking debounce protection in audio engine)
+    // 2. Play the exact MyInstants "HAha funny laugh" meme sound (with anti-spam debounce)
     sound.playMemeLaugh(settings.sound);
 
-    // 3. Dynamic Elzzup mocking reactions based on context and repeated mistakes
-    const generalMemeReactions = [
-      'HAHAHAHA!',
-      'NOPE.',
-      'HAHA! Nice try.',
-      'You actually clicked that?',
-      'Wrong.',
-      'Oh, that was painful.',
-      'HAHAHAHAHA!',
-      'Did you really think that would work?',
+    // 3. Dynamic Elzzup Insults Pool
+    const primaryInsults = [
+      'HAHAHAHA! IDIOT.',
+      "YOU'RE SO STUPID.",
+      'HAHA! THAT WAS STUPID.',
+      'WHAT ARE YOU DOING, IDIOT?',
+      'SERIOUSLY?',
+      'THAT WAS YOUR ANSWER?',
+      'HAHAHAHA! NICE ONE, STUPID.',
+      'USE YOUR BRAIN!',
+      'YOU ACTUALLY FELL FOR THAT?',
+      'BRO...',
+      'ARE YOU SERIOUS?',
     ];
 
-    const repeatedMemeReactions = [
-      'You\'re STILL doing that?',
-      'I thought you\'d have learned by now.',
-      'How many times are you gonna click that?',
-      'Are you just guessing at this point?',
+    const repeatedInsults = [
+      "YOU'RE STILL DOING THAT?",
+      "I THOUGHT YOU'D HAVE LEARNED BY NOW.",
+      'HOW MANY TIMES ARE YOU GONNA CLICK THAT?',
+      'ARE YOU JUST GUESSING AT THIS POINT?',
     ];
 
-    let chosenRemark = '';
+    let chosenInsult = '';
     if (currentRoomId === 6) {
-      chosenRemark = 'I said don\'t.';
+      chosenInsult = "I SAID DON'T, IDIOT.";
     } else if (currentRoomId === 8) {
-      chosenRemark = 'I warned you.';
+      chosenInsult = 'I WARNED YOU. USE YOUR BRAIN!';
     } else if (currentRoomId === 10) {
-      chosenRemark = 'Futile.';
+      chosenInsult = 'FUTILE! HAHAHAHA!';
+    } else if (currentRoomId === 19) {
+      chosenInsult = 'YOU ACTUALLY FELL FOR THAT? HAHAHAHA!';
     } else if (currentRoomId === 20) {
-      chosenRemark = newErrorCount >= 2 ? 'AHAHAHA! IN ROOM 20?!' : 'HAHAHAHA!';
+      chosenInsult = newErrorCount >= 2 ? 'BRO... IN FLOOR 20?!' : 'HAHAHAHA! IDIOT.';
     } else if (newErrorCount >= 3) {
-      chosenRemark = repeatedMemeReactions[Math.floor(Math.random() * repeatedMemeReactions.length)];
+      chosenInsult = repeatedInsults[Math.floor(Math.random() * repeatedInsults.length)];
     } else {
-      chosenRemark = generalMemeReactions[Math.floor(Math.random() * generalMemeReactions.length)];
+      chosenInsult = primaryInsults[Math.floor(Math.random() * primaryInsults.length)];
     }
 
-    triggerReaction(chosenRemark, 2400);
+    triggerReaction(chosenInsult, 2600);
 
     setOverlayData({
       trollTitle: title || roomDef.defaultTrollTitle || 'OOPS.',
