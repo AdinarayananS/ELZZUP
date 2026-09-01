@@ -55,17 +55,17 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
             </div>
           </button>
 
-          {/* Crisp, Subtle Speech Reaction Bubble */}
+          {/* High-Contrast, Chunky Pixel Speech Reaction Bubble */}
           {elzzupReaction && (
-            <div className="animate-fadeIn font-mono text-[10px] sm:text-xs font-bold text-[#ffdd00] bg-black/95 border-2 border-[#ffdd00] px-2 sm:px-2.5 py-0.5 shadow-[2px_2px_0_0_#000] tracking-wider whitespace-nowrap flex items-center gap-1.5 z-30">
-              <span className="w-1.5 h-1.5 bg-[#ffdd00] rotate-45 shrink-0" />
-              <span>"{elzzupReaction}"</span>
+            <div className="animate-fadeIn font-dialogue text-xs sm:text-sm font-bold text-[#ffdd00] bg-[#0c0c1e] border-3 border-[#ffdd00] px-3 py-1.5 shadow-[4px_4px_0_0_#000] tracking-wide flex items-center gap-2 z-30 max-w-xs sm:max-w-md">
+              <span className="w-2 h-2 bg-[#ffdd00] rotate-45 shrink-0 animate-pulse" />
+              <span className="leading-snug">"{elzzupReaction}"</span>
             </div>
           )}
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-[10px] sm:text-xs text-[#a0a0d0] uppercase tracking-widest font-bold">
+          <span className="font-pixel text-xs text-[#a0a0d0] uppercase tracking-wider font-bold">
             FLOOR
           </span>
           <h1 className="font-heading font-black text-2xl sm:text-3xl text-[#ffdd00] tracking-tighter uppercase drop-shadow-[2px_2px_0_#000]">
@@ -76,10 +76,10 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
         <div className="h-6 w-0.5 bg-black hidden sm:block" />
 
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] sm:text-xs text-black font-extrabold uppercase tracking-wider bg-[#ffdd00] px-2 py-0.5 border-2 border-black shadow-[2px_2px_0_0_#000]">
+          <span className="font-pixel text-xs text-black font-extrabold uppercase tracking-wider bg-[#ffdd00] px-2 py-1 border-2 border-black shadow-[2px_2px_0_0_#000]">
             CH.{chapterId}
           </span>
-          <span className="font-mono text-xs sm:text-sm text-[#c0c0e8] font-medium tracking-wide">
+          <span className="font-mono text-sm sm:text-base text-[#f0f0ff] font-bold tracking-wide">
             "{chapterTitle}"
           </span>
         </div>

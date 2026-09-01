@@ -10,6 +10,7 @@ interface SuccessOverlayProps {
   errorsCount: number;
   onNextRoom: () => void;
   soundEnabled: boolean;
+  isFinalRoom?: boolean;
 }
 
 export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
@@ -20,6 +21,7 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
   errorsCount,
   onNextRoom,
   soundEnabled,
+  isFinalRoom = false,
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -107,7 +109,7 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
           >
             <div className="flex items-center justify-center gap-3 relative z-10">
               <span className="font-heading font-extrabold text-base sm:text-xl text-black uppercase tracking-widest whitespace-nowrap">
-                Next Room
+                {isFinalRoom ? 'CLAIM TRUE VICTORY' : 'Next Room'}
               </span>
               <ArrowRight size={22} className="text-black group-hover:translate-x-2 transition-transform" />
             </div>

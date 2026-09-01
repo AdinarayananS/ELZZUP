@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden sm:inline">Settings</span>
           </button>
 
-          {currentScreen === 'game' && (
+          {(currentScreen === 'game' || currentScreen === 'know-how') && (
             <button
               onClick={() => onNavigate('main-menu')}
               className="px-2.5 sm:px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-white bg-[#ff4444] hover:bg-[#ff6666] border-2 border-black shadow-[2px_2px_0_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"

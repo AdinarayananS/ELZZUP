@@ -36,8 +36,8 @@ export function loadGameData(): SaveData {
     return {
       ...DEFAULT_SAVE,
       ...parsed,
-      highestCompletedRoom: Math.min(Math.max(parsed.highestCompletedRoom || 0, 0), 10),
-      currentRoom: Math.min(Math.max(parsed.currentRoom || 1, 1), 10),
+      highestCompletedRoom: Math.min(Math.max(parsed.highestCompletedRoom || 0, 0), 20),
+      currentRoom: Math.min(Math.max(parsed.currentRoom || 1, 1), 20),
       settings: { ...DEFAULT_SAVE.settings, ...(parsed.settings || {}) },
       stats: { ...DEFAULT_SAVE.stats, ...(parsed.stats || {}) },
     };

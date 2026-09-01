@@ -1,136 +1,175 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { RoomComponentProps } from '../types';
 import { sound } from '../audio';
-import { History, Database } from 'lucide-react';
+import { Lock, Unlock, Zap, ShieldAlert } from 'lucide-react';
+import { Logo } from '../components/Logo';
 
 export const Room15: React.FC<RoomComponentProps> = ({
   onSuccess,
   onTroll,
   soundEnabled,
 }) => {
-  const [rememberedChoice, setRememberedChoice] = useState<'RED' | 'BLUE'>('RED');
-  const [pressedButton, setPressedButton] = useState<'RED' | 'BLUE' | null>(null);
+  const [switches, setSwitches] = useState([false, false, false]);
+  const [isLocked, setIsLocked] = useState(false);
+  const [interferenceActive, setInterferenceActive] = useState(false);
+  const [elzzupComment, setElzzupComment] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const timersRef = useRef<number[]>([]);
 
   useEffect(() => {
-    // Check if player had a saved choice from Room 3, fallback to RED (standard Room 3 solution)
-    const stored = localStorage.getItem('elzzup_room3_choice');
-    if (stored === 'BLUE' || stored === 'RED') {
-      setRememberedChoice(stored);
-    } else {
-      setRememberedChoice('RED');
-    }
+    return () => {
+      timersRef.current.forEach((t) => clearTimeout(t));
+    };
   }, []);
 
-  const handleSelection = (chosen: 'RED' | 'BLUE') => {
+  const handleToggleSwitch = (index: number) => {
     if (isProcessing) return;
-    setIsProcessing(true);
-    setPressedButton(chosen);
+    sound.playClick(soundEnabled);
 
-    if (chosen === rememberedChoice) {
+    const nextSwitches = [...switches];
+    nextSwitches[index] = !nextSwitches[index];
+    setSwitches(nextSwitches);
+
+    // If not locked, trigger Elzzup's interference chance
+    if (!isLocked) {
+      const activeCount = nextSwitches.filter(Boolean).length;
+      if (activeCount === 1) {
+        setElzzupComment('I wouldn’t press that.');
+        sound.playGlitch(soundEnabled, 0.3);
+      } else if (activeCount === 2) {
+        setElzzupComment('Did you actually think I’d make it that obvious?');
+        setInterferenceActive(true);
+        sound.playGlitch(soundEnabled, 0.5);
+
+        // Elzzup attempts to reset a switch after 1.4s unless player engages the LOCK
+        const t = window.setTimeout(() => {
+          setSwitches((curr) => {
+            if (isLocked) return curr;
+            const reverted = [...curr];
+            reverted[0] = false;
+            return reverted;
+          });
+          setInterferenceActive(false);
+        }, 1400);
+        timersRef.current.push(t);
+      } else if (activeCount === 3 && !isLocked) {
+        // Attempted 3 without locking -> Elzzup disrupts
+        setInterferenceActive(true);
+        sound.playGlitch(soundEnabled, 0.7);
+        const t = window.setTimeout(() => {
+          setSwitches([false, false, false]);
+          setInterferenceActive(false);
+          onTroll(
+            'Interference Overload',
+            'ELZZUP reset the unsecured relays. You must ENGAGE THE OVERRIDE LOCK while switches are active.',
+            'ERR_ELZZUP_RESET'
+          );
+        }, 600);
+        timersRef.current.push(t);
+      }
+    }
+  };
+
+  const handleToggleLock = () => {
+    if (isProcessing) return;
+    sound.playClick(soundEnabled);
+
+    const nextLock = !isLocked;
+    setIsLocked(nextLock);
+
+    const activeCount = switches.filter(Boolean).length;
+    if (nextLock && activeCount === 3) {
+      // Perfect execution!
+      setIsProcessing(true);
+      setElzzupComment('HEY! Stop locking my controls!');
       sound.playSuccess(soundEnabled);
-      setTimeout(() => {
+      const t = window.setTimeout(() => {
         onSuccess(
-          'Yes. I remember that.',
-          `Your choice of ${chosen} in Room 3 was verified against facility memory logs.`
+          'Interference Outsmarted.',
+          'You bypassed ELZZUP’s active disruptions by latching the override.'
         );
-      }, 450);
-    } else {
-      sound.playTroll(soundEnabled);
-      setTimeout(() => {
-        onTroll(
-          'Memory Mismatch.',
-          `Facility records indicate you trusted ${rememberedChoice} previously.`,
-          `ERR_MEMORY_RECALL // ATTEMPTED: ${chosen} vs LOGGED: ${rememberedChoice}`
-        );
-      }, 350);
+      }, 700);
+      timersRef.current.push(t);
     }
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center p-4 geo-dots-bg select-none">
-      {/* Top Banner Warning */}
-      <div className="relative z-10 mb-4 px-4 py-1.5 bg-black/60 border-2 border-black font-mono text-xs text-[#a0a0d0] uppercase tracking-widest flex items-center gap-2 shadow-[2px_2px_0_0_#000]">
-        <Database size={14} className="text-[#ffdd00]" />
-        <span className="font-bold text-[#f0f0ff]">ARCHIVE RECALL // ROOM 03 VERIFICATION</span>
+    <div className="relative w-full h-full flex flex-col items-center justify-center p-3 select-none">
+      {/* Elzzup Hologram & Interference Banner */}
+      <div className="flex items-center gap-2 mb-3 bg-[#120820] border-3 border-[#ff4444] px-3.5 py-2 shadow-[3px_3px_0_0_#000] max-w-md w-full justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 shrink-0">
+            <Logo size="sm" mood="glitched" isCorrupted={true} animated={false} />
+          </div>
+          <span className="font-dialogue text-xs sm:text-sm font-bold text-[#ff8888]">
+            "{elzzupComment || 'ELZZUP IS ACTIVELY CORRUPTING THIS PANEL'}"
+          </span>
+        </div>
+        {interferenceActive && (
+          <span className="font-mono text-xs bg-[#ff4444] text-black px-2 py-0.5 font-black uppercase animate-pulse border border-black">
+            INTERFERING
+          </span>
+        )}
       </div>
 
-      {/* Main Chamber Pedestals */}
-      <div className="relative z-10 flex flex-col items-center max-w-lg w-full">
-        <div className="w-full bg-[#1a1a3a] border-8 border-black p-6 sm:p-8 shadow-[0_12px_0_0_#000] flex flex-col items-center gap-6">
-          <div className="flex items-center gap-2 text-[#a0a0d0] font-mono text-xs font-bold uppercase tracking-wider">
-            <History size={16} className="text-[#ffdd00]" />
-            <span>Which button did you trust in Room 03?</span>
+      {/* Main Console Box */}
+      <div
+        className={`bg-[#1a1a3a] border-4 sm:border-6 border-black p-5 sm:p-7 shadow-[8px_8px_0_0_#000] flex flex-col items-center max-w-md w-full transition-all ${
+          interferenceActive ? 'border-[#ff4444] animate-pulse' : ''
+        }`}
+      >
+        <div className="w-full flex items-center justify-between border-b-3 border-black pb-3 mb-4">
+          <div className="font-pixel text-xs sm:text-sm text-[#ffdd00] font-black uppercase flex items-center gap-2">
+            <Zap size={16} />
+            <span>TRIPLE BYPASS MATRIX</span>
           </div>
-
-          {/* Dual Choice Buttons */}
-          <div className="flex items-center justify-center gap-6 sm:gap-10 w-full flex-wrap">
-            {/* RED OPTION */}
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => handleSelection('RED')}
-                disabled={isProcessing}
-                title="Select RED button memory"
-                className={`
-                  group relative select-none cursor-pointer
-                  w-24 h-24 sm:w-28 sm:h-28
-                  rounded-full
-                  bg-[#ff4444] hover:bg-[#ff6666]
-                  border-8 border-black
-                  flex flex-col items-center justify-center
-                  transition-all duration-100 ease-out
-                  ${
-                    pressedButton === 'RED'
-                      ? 'translate-y-3 shadow-[0_2px_0_0_#990000] bg-[#990000]'
-                      : 'shadow-[0_10px_0_0_#990000,0_14px_0_0_#000] hover:-translate-y-1 active:translate-y-3'
-                  }
-                `}
-              >
-                <div className="absolute top-2 left-4 right-4 h-3 bg-white/30 pointer-events-none rounded-full" />
-                <span className="relative z-10 font-heading font-extrabold text-xs sm:text-sm text-white uppercase tracking-wider">
-                  RED
-                </span>
-              </button>
-              <div className="w-32 sm:w-36 h-2.5 bg-[#2a2a4a] border-2 border-black shadow-[1px_1px_0_0_#000] -mt-1" />
-            </div>
-
-            {/* BLUE OPTION */}
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => handleSelection('BLUE')}
-                disabled={isProcessing}
-                title="Select BLUE button memory"
-                className={`
-                  group relative select-none cursor-pointer
-                  w-24 h-24 sm:w-28 sm:h-28
-                  rounded-full
-                  bg-[#2277ff] hover:bg-[#4499ff]
-                  border-8 border-black
-                  flex flex-col items-center justify-center
-                  transition-all duration-100 ease-out
-                  ${
-                    pressedButton === 'BLUE'
-                      ? 'translate-y-3 shadow-[0_2px_0_0_#0033aa] bg-[#0033aa]'
-                      : 'shadow-[0_10px_0_0_#0033aa,0_14px_0_0_#000] hover:-translate-y-1 active:translate-y-3'
-                  }
-                `}
-              >
-                <div className="absolute top-2 left-4 right-4 h-3 bg-white/30 pointer-events-none rounded-full" />
-                <span className="relative z-10 font-heading font-extrabold text-xs sm:text-sm text-white uppercase tracking-wider">
-                  BLUE
-                </span>
-              </button>
-              <div className="w-32 sm:w-36 h-2.5 bg-[#2a2a4a] border-2 border-black shadow-[1px_1px_0_0_#000] -mt-1" />
-            </div>
+          <div className="font-mono text-xs text-[#a0a0d0] font-bold uppercase bg-black/80 px-2 py-0.5 border border-black">
+            ACTIVE: {switches.filter(Boolean).length}/3
           </div>
         </div>
 
-        {/* Base Footing */}
-        <div className="w-[85%] h-3.5 bg-[#1a1a3a] border-4 border-black shadow-[2px_2px_0_0_#000] -mt-1" />
-      </div>
+        {/* 3 Switches */}
+        <div className="grid grid-cols-3 gap-3 w-full mb-4">
+          {['ALPHA', 'BETA', 'GAMMA'].map((label, idx) => {
+            const isOn = switches[idx];
+            return (
+              <button
+                key={label}
+                disabled={isLocked || isProcessing}
+                onClick={() => handleToggleSwitch(idx)}
+                className={`h-20 border-3 border-black font-mono flex flex-col items-center justify-center p-2 shadow-[3px_3px_0_0_#000] transition-all cursor-pointer ${
+                  isOn
+                    ? 'bg-[#44ff44] text-black hover:bg-[#66ff66]'
+                    : 'bg-[#2a2a4a] text-[#a0a0d0] hover:bg-[#3a3a5a]'
+                } ${isLocked ? 'cursor-default opacity-90' : 'active:translate-y-0.5'}`}
+              >
+                <span className="text-xs font-black">{label}</span>
+                <span className="text-[10px] font-bold mt-1">
+                  [{isOn ? 'ENGAGED' : 'OFF'}]
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-      {/* Decorative corner diamond */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 w-6 h-6 border-2 border-black bg-[#ffdd00] rotate-45 shadow-[2px_2px_0_0_#000] pointer-events-none" />
+        {/* Override Lock Button */}
+        <button
+          disabled={isProcessing}
+          onClick={handleToggleLock}
+          className={`w-full py-2.5 border-3 border-black font-heading font-black text-xs sm:text-sm uppercase shadow-[3px_3px_0_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer flex items-center justify-center gap-2 transition-all ${
+            isLocked
+              ? 'bg-[#ffdd00] hover:bg-[#ffee44] text-black'
+              : 'bg-[#2a2a4a] hover:bg-[#3a3a5a] text-[#f0f0ff]'
+          }`}
+        >
+          {isLocked ? <Lock size={15} /> : <Unlock size={15} />}
+          {isLocked ? 'OVERRIDE LATCH: ENGAGED [LOCKED]' : 'ENGAGE OVERRIDE LATCH [FREEZE]'}
+        </button>
+
+        <div className="mt-4 font-mono text-[9px] text-[#a0a0d0] uppercase tracking-wider text-center">
+          Tip: Activate all 3 relays and lock them before ELZZUP reverts the matrix.
+        </div>
+      </div>
     </div>
   );
 };

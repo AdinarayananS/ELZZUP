@@ -35,6 +35,16 @@ const ROOM_ENTRY_REMARKS: Record<number, string> = {
   8: 'Don\'t touch that.',
   9: 'Almost done.',
   10: 'You\'re still here?',
+  11: 'I wouldn\'t press that.',
+  12: 'You really fell for that?',
+  13: 'Did you actually think I\'d make it that obvious?',
+  14: 'You\'re getting warmer.',
+  15: 'Close.',
+  16: 'I wouldn\'t touch those frequencies.',
+  17: 'Watch the current.',
+  18: 'You really think you solved it?',
+  19: 'Close. Very close.',
+  20: 'This is the end of the line.',
 };
 
 const POKE_REMARKS = [
@@ -67,16 +77,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const reactionTimeoutRef = useRef<number | null>(null);
   const roomDef = getRoomById(currentRoomId);
 
-  // Helper to trigger a short ELZZUP remark
-  const triggerReaction = (text: string, durationMs = 2800) => {
+  // Helper to trigger a readable ELZZUP remark
+  const triggerReaction = (text: string, durationMs?: number) => {
     if (reactionTimeoutRef.current) {
       clearTimeout(reactionTimeoutRef.current);
     }
+    const computedDuration = durationMs || Math.max(4500, text.length * 120);
     setElzzupReaction(text);
     reactionTimeoutRef.current = window.setTimeout(() => {
       setElzzupReaction(null);
       reactionTimeoutRef.current = null;
-    }, durationMs);
+    }, computedDuration);
   };
 
   // Anti-Spam Hidden Interaction Monitor
@@ -98,8 +109,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     if (antiSpam.spamScore >= 3.5) return 'suspicious';
     if (currentRoomId <= 3) return 'smug';
     if (currentRoomId <= 7) return 'suspicious';
-    if (currentRoomId <= 9) return 'worried';
-    return 'worried';
+    if (currentRoomId <= 10) return 'worried';
+    if (currentRoomId >= 11 && currentRoomId <= 15) return 'smug';
+    if (currentRoomId >= 16 && currentRoomId <= 19) return 'suspicious';
+    return 'glitched';
   };
 
   // Subtle reaction when entering a new room
@@ -387,6 +400,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         errorsCount={roomErrors}
         onNextRoom={handleNextRoom}
         soundEnabled={settings.sound}
+        isFinalRoom={currentRoomId === 20}
       />
 
       <TrollOverlay

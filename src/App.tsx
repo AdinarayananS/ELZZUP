@@ -9,6 +9,8 @@ import { MainMenu } from './components/MainMenu';
 import { GameScreen } from './components/GameScreen';
 import { PauseOverlay } from './components/PauseOverlay';
 import { FinalVictory } from './components/FinalVictory';
+import { FakeVictory10 } from './components/FakeVictory10';
+import { KnowHowGuide } from './components/KnowHowGuide';
 import { TOTAL_ROOMS } from './rooms/RoomRegistry';
 
 export default function App() {
@@ -72,11 +74,21 @@ export default function App() {
       return updated;
     });
 
-    if (roomId >= TOTAL_ROOMS) {
+    if (roomId === 10) {
+      // Trigger the Fake Victory Glitch Sequence!
+      setCurrentScreen('fake-victory-10');
+    } else if (roomId >= TOTAL_ROOMS) {
+      // True Final Victory at Room 20!
       setCurrentScreen('victory');
     } else {
       setCurrentRoomId(roomId + 1);
     }
+  };
+
+  // Callback when Fake Victory glitch sequence concludes and launches Floor 11
+  const handleProceedToFloor11 = () => {
+    setCurrentRoomId(11);
+    setCurrentScreen('game');
   };
 
   // Reset Progress
@@ -113,9 +125,23 @@ export default function App() {
           <MainMenu
             onNewGame={handleNewGame}
             onContinue={handleContinue}
+            onOpenKnowHow={() => {
+              setCurrentScreen('know-how');
+              sound.playClick(saveData.settings.sound);
+            }}
             onOpenSettings={() => setIsSettingsOpen(true)}
             hasSavedProgress={saveData.highestCompletedRoom > 0}
             highestCompletedRoom={saveData.highestCompletedRoom}
+            soundEnabled={saveData.settings.sound}
+          />
+        )}
+
+        {currentScreen === 'know-how' && (
+          <KnowHowGuide
+            onBack={() => {
+              setCurrentScreen('main-menu');
+              sound.playClick(saveData.settings.sound);
+            }}
             soundEnabled={saveData.settings.sound}
           />
         )}
@@ -133,6 +159,13 @@ export default function App() {
           />
         )}
 
+        {currentScreen === 'fake-victory-10' && (
+          <FakeVictory10
+            onProceedToFloor11={handleProceedToFloor11}
+            soundEnabled={saveData.settings.sound}
+          />
+        )}
+
         {currentScreen === 'victory' && (
           <FinalVictory
             onBackToMenu={() => setCurrentScreen('main-menu')}
@@ -147,7 +180,6 @@ export default function App() {
         onResume={() => setIsSettingsOpen(false)}
         onRestart={() => {
           setIsSettingsOpen(false);
-          // If on game screen, reset current room
         }}
         settings={saveData.settings}
         onUpdateSettings={handleUpdateSettings}

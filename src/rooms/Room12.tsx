@@ -1,135 +1,201 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { RoomComponentProps } from '../types';
 import { sound } from '../audio';
-import { Hourglass, Key, Zap } from 'lucide-react';
+import { Scissors, AlertTriangle, FileText } from 'lucide-react';
+
+interface Wire {
+  id: string;
+  name: string;
+  colorHex: string;
+  accentHex: string;
+  isCorrect: boolean;
+  trollTitle: string;
+  trollMsg: string;
+}
+
+const WIRES: Wire[] = [
+  {
+    id: 'red',
+    name: 'RED WIRE [PRIMARY]',
+    colorHex: '#ff4444',
+    accentHex: '#ff8888',
+    isCorrect: false,
+    trollTitle: 'Obvious Trap',
+    trollMsg: 'You cut the giant flashing red wire. Did you even glance at the schematic?',
+  },
+  {
+    id: 'blue',
+    name: 'BLUE WIRE [BYPASS]',
+    colorHex: '#2277ff',
+    accentHex: '#66aaff',
+    isCorrect: true,
+    trollTitle: '',
+    trollMsg: '',
+  },
+  {
+    id: 'green',
+    name: 'GREEN WIRE [AUX]',
+    colorHex: '#22cc55',
+    accentHex: '#66ee88',
+    isCorrect: false,
+    trollTitle: 'Auxiliary Cut',
+    trollMsg: 'Auxiliary loop severed. System locked down.',
+  },
+  {
+    id: 'yellow',
+    name: 'YELLOW WIRE [GRID]',
+    colorHex: '#ffdd00',
+    accentHex: '#ffee88',
+    isCorrect: false,
+    trollTitle: 'Power Surge',
+    trollMsg: 'Cutting live grid line triggered facility backup.',
+  },
+];
 
 export const Room12: React.FC<RoomComponentProps> = ({
   onSuccess,
   onTroll,
   soundEnabled,
 }) => {
-  const [secondsWaited, setSecondsWaited] = useState(0);
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [cutWires, setCutWires] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const timersRef = useRef<number[]>([]);
 
   useEffect(() => {
-    if (isUnlocked || isProcessing) return;
+    return () => {
+      timersRef.current.forEach((t) => clearTimeout(t));
+    };
+  }, []);
 
-    const timer = setInterval(() => {
-      setSecondsWaited((prev) => {
-        const next = prev + 1;
-        if (next >= 4) {
-          setIsUnlocked(true);
-          sound.playLatchOpen(soundEnabled);
-          clearInterval(timer);
-        }
-        return next;
-      });
-    }, 1000);
+  const handleCutWire = (wire: Wire) => {
+    if (isProcessing || cutWires.includes(wire.id)) return;
 
-    return () => clearInterval(timer);
-  }, [isUnlocked, isProcessing, soundEnabled]);
+    sound.playClick(soundEnabled);
+    setCutWires((prev) => [...prev, wire.id]);
+    setIsProcessing(true);
 
-  const handleDormantConsoleClick = () => {
-    if (isProcessing) return;
-    if (!isUnlocked) {
-      sound.playTroll(soundEnabled);
-      setIsProcessing(true);
-      setTimeout(() => {
-        onTroll(
-          'Too impatient.',
-          'The instruction literally said: "WAIT."',
-          'ERR_CALIBRATION_INTERRUPTED // SYS_BUSY'
+    if (wire.isCorrect) {
+      sound.playSuccess(soundEnabled);
+      const t = window.setTimeout(() => {
+        onSuccess(
+          'Circuit Disarmed.',
+          'You actually checked the schematic instead of falling for the flashing red bait.'
         );
-      }, 350);
+      }, 700);
+      timersRef.current.push(t);
+    } else {
+      sound.playGlitch(soundEnabled);
+      const t = window.setTimeout(() => {
+        setIsProcessing(false);
+        setCutWires([]);
+        onTroll(wire.trollTitle, wire.trollMsg, 'ERR_WIRE_CUT');
+      }, 700);
+      timersRef.current.push(t);
     }
   };
 
-  const handleRevealedKeyClick = () => {
-    if (isProcessing) return;
-    setIsProcessing(true);
-    sound.playSuccess(soundEnabled);
-
-    setTimeout(() => {
-      onSuccess(
-        'Observation rewarded.',
-        'Patience and keen eyes beat blind button mashing.'
-      );
-    }, 450);
-  };
-
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center p-4 geo-dots-bg select-none">
-      {/* Top Banner Status */}
-      <div className="relative z-10 mb-6 px-4 py-1.5 bg-black/60 border-2 border-black font-mono text-xs text-[#a0a0d0] uppercase tracking-widest flex items-center gap-2 shadow-[2px_2px_0_0_#000]">
-        <Hourglass size={14} className={isUnlocked ? 'text-[#44ff44]' : 'text-[#ffdd00] animate-spin'} />
-        <span className="font-bold text-[#f0f0ff]">
-          {isUnlocked ? 'SYSTEM DORMANT LOCK DEACTIVATED' : 'FACILITY CALIBRATION IN PROGRESS...'}
-        </span>
+    <div className="relative w-full h-full flex flex-col items-center justify-center p-3 select-none">
+      {/* High-Contrast Schematic Clue Banner (Visible on all screens) */}
+      <div className="w-full max-w-lg bg-[#0c0c1e] border-3 border-[#ffdd00] p-3 mb-3 text-left shadow-[4px_4px_0_0_#000]">
+        <div className="font-pixel text-xs text-[#ffdd00] uppercase font-bold flex items-center gap-1.5 mb-1">
+          <FileText size={14} className="text-[#ffdd00]" />
+          <span>BLUEPRINT SCHEMATIC // JUNCTION #12</span>
+        </div>
+        <p className="font-mono text-xs text-[#f0f0ff] leading-relaxed">
+          <strong className="text-[#ff4444] font-black">CRITICAL:</strong> RED WIRE is wired to emergency alarm triggers.{' '}
+          Disarm the power relay safely via the <strong className="text-[#66aaff] font-black underline">BLUE WIRE (GROUND ⏚)</strong>.
+        </p>
       </div>
 
-      {/* Main Dormant Vault Console */}
-      <div className="relative z-10 flex flex-col items-center max-w-md w-full">
-        <div className="w-full bg-[#1a1a3a] border-8 border-black p-6 sm:p-8 shadow-[0_12px_0_0_#000] flex flex-col items-center gap-5 text-center">
-          {/* Main Display Screen */}
-          <div
-            onClick={handleDormantConsoleClick}
-            className={`w-full bg-[#0a0a1a] border-4 border-black p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${
-              !isUnlocked ? 'hover:border-[#ff4444]' : ''
-            }`}
-          >
-            <div className="font-mono text-xs text-[#a0a0d0] uppercase tracking-wider">
-              TERMINAL // OFFLINE
-            </div>
-            <div className="w-full h-2 bg-[#1a1a3a] border border-black overflow-hidden relative">
-              <div
-                className={`h-full transition-all duration-1000 ease-linear ${
-                  isUnlocked ? 'bg-[#44ff44]' : 'bg-[#ffdd00]'
-                }`}
-                style={{ width: `${Math.min((secondsWaited / 4) * 100, 100)}%` }}
-              />
-            </div>
-            <span className="font-mono text-[10px] text-[#ffdd00]">
-              {isUnlocked ? 'OVERRIDE HATCH REVEALED BELOW' : `STANDBY: ${Math.min((secondsWaited / 4) * 100, 100)}%`}
-            </span>
+      {/* Main Defusal Junction Box */}
+      <div className="bg-[#1a1a3a] border-4 sm:border-6 border-black p-4 sm:p-6 shadow-[8px_8px_0_0_#000] flex flex-col items-center max-w-lg w-full">
+        <div className="w-full flex items-center justify-between border-b-3 border-black pb-3 mb-4">
+          <div className="font-pixel text-xs sm:text-sm text-[#ffdd00] font-black uppercase flex items-center gap-2">
+            <AlertTriangle size={16} className="text-[#ff4444] animate-pulse" />
+            <span>JUNCTION RELAY 44</span>
           </div>
-
-          {/* Dormant Lever Slot */}
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-20 bg-[#2a2a4a] border-4 border-black flex flex-col items-center justify-center p-2 opacity-50">
-              <Zap size={24} className="text-[#a0a0d0]" />
-              <span className="font-mono text-[8px] text-[#a0a0d0] mt-1">LOCKED</span>
-            </div>
-            <div className="w-16 h-20 bg-[#2a2a4a] border-4 border-black flex flex-col items-center justify-center p-2 opacity-50">
-              <Zap size={24} className="text-[#a0a0d0]" />
-              <span className="font-mono text-[8px] text-[#a0a0d0] mt-1">LOCKED</span>
-            </div>
+          <div className="font-mono text-xs bg-[#ff4444] text-black px-2 py-0.5 font-black uppercase animate-pulse border border-black shadow-[2px_2px_0_0_#000]">
+            LIVE WIRES
           </div>
-
-          {/* HIDDEN / REVEALED KEYCARD MODULE */}
-          {isUnlocked && (
-            <div className="w-full animate-bounce mt-1">
-              <button
-                onClick={handleRevealedKeyClick}
-                disabled={isProcessing}
-                title="Collect Revealed Access Key"
-                className="w-full bg-[#ffdd00] hover:bg-[#ffee44] border-4 border-black py-3 px-4 shadow-[0_6px_0_0_#aa9900,0_8px_0_0_#000] active:translate-y-1 active:shadow-none flex items-center justify-center gap-3 cursor-pointer transition-all"
-              >
-                <Key size={20} className="text-black" />
-                <span className="font-heading font-extrabold text-xs sm:text-sm text-black uppercase tracking-wider">
-                  INSERT OVERRIDE KEY
-                </span>
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Base Footing */}
-        <div className="w-[85%] h-3.5 bg-[#1a1a3a] border-4 border-black shadow-[2px_2px_0_0_#000] -mt-1" />
-      </div>
+        {/* Wire Rack */}
+        <div className="w-full flex flex-col gap-3 my-2">
+          {WIRES.map((wire) => {
+            const isCut = cutWires.includes(wire.id);
+            const isRedTrap = wire.id === 'red';
 
-      {/* Decorative corner diamond */}
-      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 w-6 h-6 border-2 border-black bg-[#ffdd00] rotate-45 shadow-[2px_2px_0_0_#000] pointer-events-none" />
+            return (
+              <div
+                key={wire.id}
+                className="w-full bg-[#2a2a4a] border-2 border-black p-2 flex items-center justify-between gap-3 shadow-[2px_2px_0_0_#000]"
+              >
+                {/* Left Wire Visual Terminal */}
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="w-4 h-4 rounded-full border-2 border-black bg-black flex items-center justify-center shrink-0">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: wire.colorHex }}
+                    />
+                  </div>
+
+                  {/* Wire Strand */}
+                  <div className="flex-1 h-3 bg-black/60 relative overflow-hidden flex items-center">
+                    {isCut ? (
+                      <div className="w-full flex justify-between px-1">
+                        <div
+                          className="h-2 w-1/3 border-r-2 border-black"
+                          style={{ backgroundColor: wire.colorHex }}
+                        />
+                        <div
+                          className="h-2 w-1/3 border-l-2 border-black"
+                          style={{ backgroundColor: wire.colorHex }}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className={`h-2 w-full transition-all ${
+                          isRedTrap ? 'animate-pulse' : ''
+                        }`}
+                        style={{
+                          backgroundColor: wire.colorHex,
+                          boxShadow: isRedTrap
+                            ? '0 0 8px rgba(255,68,68,0.8)'
+                            : undefined,
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  <span className="font-mono text-[10px] font-bold text-[#f0f0ff] uppercase w-28 text-left hidden sm:inline">
+                    {wire.name}
+                  </span>
+                </div>
+
+                {/* Snip Action Button */}
+                <button
+                  disabled={isCut || isProcessing}
+                  onClick={() => handleCutWire(wire)}
+                  className={`px-3 py-1.5 border-2 border-black font-mono text-[10px] font-extrabold uppercase flex items-center gap-1 shadow-[2px_2px_0_0_#000] cursor-pointer transition-all ${
+                    isCut
+                      ? 'bg-[#1a1a2a] text-[#555577] shadow-none cursor-default'
+                      : 'bg-[#ffdd00] hover:bg-[#ffee44] text-black active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'
+                  }`}
+                >
+                  <Scissors size={12} />
+                  {isCut ? 'SEVERED' : 'SNIP'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Small mobile schematic hint */}
+        <div className="mt-3 sm:hidden font-mono text-[9px] text-[#ffdd00] text-center uppercase font-bold">
+          [SCHEMATIC: BLUE = ⏚ GROUND DISARM]
+        </div>
+      </div>
     </div>
   );
 };

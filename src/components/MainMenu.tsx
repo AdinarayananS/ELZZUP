@@ -1,11 +1,12 @@
 import React from 'react';
 import { Logo } from './Logo';
 import { PixelButton } from './PixelButton';
-import { Play, RotateCcw, Settings as SettingsIcon, ShieldAlert } from 'lucide-react';
+import { Play, RotateCcw, Settings as SettingsIcon, BookOpen } from 'lucide-react';
 
 interface MainMenuProps {
   onNewGame: () => void;
   onContinue: () => void;
+  onOpenKnowHow: () => void;
   onOpenSettings: () => void;
   hasSavedProgress: boolean;
   highestCompletedRoom: number;
@@ -15,6 +16,7 @@ interface MainMenuProps {
 export const MainMenu: React.FC<MainMenuProps> = ({
   onNewGame,
   onContinue,
+  onOpenKnowHow,
   onOpenSettings,
   hasSavedProgress,
   highestCompletedRoom,
@@ -86,7 +88,19 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             onClick={onContinue}
             icon={<RotateCcw size={18} />}
           >
-            Continue {hasSavedProgress && `(Room ${Math.min(highestCompletedRoom + 1, 10)})`}
+            Continue {hasSavedProgress && `(Room ${Math.min(highestCompletedRoom + 1, 20)})`}
+          </PixelButton>
+
+          {/* Know-How / How To Play Button */}
+          <PixelButton
+            variant="neutral"
+            size="md"
+            fullWidth
+            soundEnabled={soundEnabled}
+            onClick={onOpenKnowHow}
+            icon={<BookOpen size={18} className="text-[#ffdd00]" />}
+          >
+            Know-How
           </PixelButton>
 
           {/* Settings Button */}

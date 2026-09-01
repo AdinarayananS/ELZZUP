@@ -22,7 +22,7 @@ export interface RoomDefinition {
   component: React.ComponentType<RoomComponentProps>;
 }
 
-export type ScreenState = 'main-menu' | 'game' | 'victory';
+export type ScreenState = 'main-menu' | 'game' | 'victory' | 'fake-victory-10' | 'know-how';
 
 export type OverlayType = 'none' | 'success' | 'troll' | 'pause' | 'victory' | 'settings';
 

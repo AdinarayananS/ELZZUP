@@ -51,32 +51,32 @@ export const AntiSpamOverlay: React.FC<AntiSpamOverlayProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Warning Strip */}
-            <div className="w-full bg-[#ff4444] text-black px-2 py-0.5 mb-3 flex items-center justify-between border-b-2 border-black">
-              <span className="font-mono text-[9px] font-black uppercase tracking-widest flex items-center gap-1">
-                <ShieldAlert size={12} />
+            <div className="w-full bg-[#ff4444] text-black px-2 py-1 mb-3 flex items-center justify-between border-b-2 border-black">
+              <span className="font-mono text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldAlert size={14} />
                 OVERRIDE_GUARD
               </span>
-              <span className="font-mono text-[9px] font-black uppercase tracking-wider">
+              <span className="font-mono text-xs font-black uppercase tracking-wider">
                 [TEMP_LOCK]
               </span>
             </div>
 
             {/* Pixel Mascot / Warning Icon */}
-            <div className="w-12 h-12 bg-[#2a1a2a] border-3 border-[#ff4444] flex items-center justify-center mb-2 shadow-[2px_2px_0_0_#000] animate-bounce shrink-0">
-              <AlertTriangle size={24} className="text-[#ff4444]" />
+            <div className="w-14 h-14 bg-[#2a1a2a] border-3 border-[#ff4444] flex items-center justify-center mb-2.5 shadow-[2px_2px_0_0_#000] animate-bounce shrink-0">
+              <AlertTriangle size={28} className="text-[#ff4444]" />
             </div>
 
             {/* Stern Trolling Headline */}
-            <h3 className="font-heading font-black text-base sm:text-lg text-[#ff4444] uppercase tracking-wider mb-1 drop-shadow-[2px_2px_0_#000]">
+            <h3 className="font-heading font-black text-lg sm:text-xl text-[#ff4444] uppercase tracking-wider mb-1.5 drop-shadow-[2px_2px_0_#000]">
               {lockoutMessage}
             </h3>
 
-            <p className="font-mono text-[10px] sm:text-[11px] text-[#a0a0d0] uppercase tracking-widest mb-3">
+            <p className="font-mono text-xs text-[#f0f0ff] uppercase tracking-wider mb-3 font-bold">
               Rapid input suspended. Observe the chamber.
             </p>
 
             {/* Rapid Cooldown Progress Bar */}
-            <div className="w-full bg-black/80 border-2 border-black h-3.5 p-0.5 relative overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
+            <div className="w-full bg-black/80 border-2 border-black h-4 p-0.5 relative overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
               <div
                 className="h-full bg-[#ffdd00] transition-all duration-[1250ms] ease-linear"
                 style={{
@@ -86,7 +86,7 @@ export const AntiSpamOverlay: React.FC<AntiSpamOverlayProps> = ({
               />
             </div>
 
-            <div className="mt-2 font-mono text-[8px] text-[#ffdd00] tracking-widest uppercase font-bold">
+            <div className="mt-2.5 font-mono text-xs text-[#ffdd00] tracking-wider uppercase font-black">
               // RESUMING SYSTEM //
             </div>
           </div>

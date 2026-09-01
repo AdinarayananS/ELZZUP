@@ -9,6 +9,16 @@ import { Room7 } from './Room7';
 import { Room8 } from './Room8';
 import { Room9 } from './Room9';
 import { Room10 } from './Room10';
+import { Room11 } from './Room11';
+import { Room12 } from './Room12';
+import { Room13 } from './Room13';
+import { Room14 } from './Room14';
+import { Room15 } from './Room15';
+import { Room16 } from './Room16';
+import { Room17 } from './Room17';
+import { Room18 } from './Room18';
+import { Room19 } from './Room19';
+import { Room20 } from './Room20';
 
 export const ROOMS: RoomDefinition[] = [
   {
@@ -141,10 +151,140 @@ export const ROOMS: RoomDefinition[] = [
     hint: 'Invert false commands, harmonize breaker frequencies, and spell the unmasked secret backwards.',
     component: Room10,
   },
+  {
+    id: 11,
+    chapter: 3,
+    chapterTitle: 'The Deep Core',
+    title: 'Room 11',
+    instruction: 'PRESS BUTTONS IN NUMERICAL ORDER.',
+    defaultSuccessMessage: 'Register Inverted.',
+    defaultSuccessSubmessage: 'Counting backwards: the first altered rule.',
+    defaultTrollTitle: 'Counter Inverted',
+    defaultTrollMessage: 'Did you really think counting forward works in a corrupted system?',
+    hint: 'Check the top diagnostic log: the stack decrements from 4 down to 1.',
+    component: Room11,
+  },
+  {
+    id: 12,
+    chapter: 3,
+    chapterTitle: 'The Deep Core',
+    title: 'Room 12',
+    instruction: 'DISARM THE VOLATILE CIRCUIT.',
+    defaultSuccessMessage: 'Circuit Disarmed.',
+    defaultSuccessSubmessage: 'You checked the schematic instead of falling for the red wire bait.',
+    defaultTrollTitle: 'Obvious Trap',
+    defaultTrollMessage: 'You cut the giant flashing red wire without reading the schematic.',
+    hint: 'Read the schematic note in the corner: Blue wire is the grounded disarm relay.',
+    component: Room12,
+  },
+  {
+    id: 13,
+    chapter: 3,
+    chapterTitle: 'The Deep Core',
+    title: 'Room 13',
+    instruction: 'PRESS THE GREEN BUTTON TO CONFIRM.',
+    defaultSuccessMessage: 'True Spectrum Unlocked.',
+    defaultSuccessSubmessage: 'Objects are not always what they appear under deceptive lighting.',
+    defaultTrollTitle: 'Chromatically Deceived',
+    defaultTrollMessage: 'That button only looked green under the faulty ambient light.',
+    hint: 'Toggle the True Spectrum Optical Filter to reveal the authentic green emitter.',
+    component: Room13,
+  },
+  {
+    id: 14,
+    chapter: 3,
+    chapterTitle: 'The Deep Core',
+    title: 'Room 14',
+    instruction: 'CALIBRATE THE ROTARY DIALS.',
+    defaultSuccessMessage: 'Overload Neutralized.',
+    defaultSuccessSubmessage: 'You adapted when the system shifted the rules mid-attempt.',
+    defaultTrollTitle: 'Equilibrium Failed',
+    defaultTrollMessage: 'The sum of Dial A and Dial B must equal exactly 100%.',
+    hint: 'Set Dial A to 50% and Dial B to 50% (or any split summing to 100%) and stabilize.',
+    component: Room14,
+  },
+  {
+    id: 15,
+    chapter: 3,
+    chapterTitle: 'The Deep Core',
+    title: 'Room 15',
+    instruction: 'AUTHORIZE SECURITY OVERRIDE.',
+    defaultSuccessMessage: 'Interference Outsmarted.',
+    defaultSuccessSubmessage: 'You bypassed ELZZUP’s disruptions by latching the override.',
+    defaultTrollTitle: 'Interference Overload',
+    defaultTrollMessage: 'ELZZUP reset the unsecured relays. Engage the override lock.',
+    hint: 'Activate all 3 switches and immediately engage the override latch before ELZZUP resets them.',
+    component: Room15,
+  },
+  {
+    id: 16,
+    chapter: 4,
+    chapterTitle: 'The Glitched Abyss',
+    title: 'Room 16',
+    instruction: 'EXECUTE DUAL-TIER BYPASS.',
+    defaultSuccessMessage: 'Multi-Stage Bypass Complete.',
+    defaultSuccessSubmessage: 'Key captured and harmonic parity synchronized in reverse.',
+    defaultTrollTitle: 'Harmonic Frequency Mismatch',
+    defaultTrollMessage: 'Breaker parity requires highest frequency first (Gamma → Beta → Alpha).',
+    hint: 'Catch the wandering bypass key, then tune breakers from highest to lowest frequency.',
+    component: Room16,
+  },
+  {
+    id: 17,
+    chapter: 4,
+    chapterTitle: 'The Glitched Abyss',
+    title: 'Room 17',
+    instruction: 'BRIDGE THE 12V CIRCUIT WITH A CONDUCTIVE MEDIUM.',
+    defaultSuccessMessage: 'Circuit Bridged.',
+    defaultSuccessSubmessage: 'You bypassed the misleading labels and chose the only real electrical conductor.',
+    defaultTrollTitle: 'Current Blocked',
+    defaultTrollMessage: 'Insulators do not conduct electricity. Look for the true metallic conductor.',
+    hint: 'Rubber and wood are insulators. Only metal conducts electricity to complete a circuit.',
+    component: Room17,
+  },
+  {
+    id: 18,
+    chapter: 4,
+    chapterTitle: 'The Glitched Abyss',
+    title: 'Room 18',
+    instruction: 'ALIGN SUB-CORE CONDUIT MATRIX.',
+    defaultSuccessMessage: 'Sub-Core Matrix Harmonized.',
+    defaultSuccessSubmessage: 'Conduit flow aligned and spectral glyph verified.',
+    defaultTrollTitle: 'Power Grid Open Circuit',
+    defaultTrollMessage: 'The 4 conduit junctions must form a continuous channel.',
+    hint: 'Rotate the 4 conduits until power connects from left to right, then verify with the spectral lens.',
+    component: Room18,
+  },
+  {
+    id: 19,
+    chapter: 4,
+    chapterTitle: 'The Glitched Abyss',
+    title: 'Room 19',
+    instruction: 'DEACTIVATE MASTER CORE CONTAINMENT.',
+    defaultSuccessMessage: 'Master Containment Breached.',
+    defaultSuccessSubmessage: 'All 3 core dampeners harmonized. Entering THE VOID CORE.',
+    defaultTrollTitle: 'Containment Overpressure',
+    defaultTrollMessage: 'Match all 3 target calibrations (Thermal: 75%, Magnetic: 50%, Pressure: 25%).',
+    hint: 'Calibrate Thermal to 75%, Magnetic to 50%, and Pressure to 25%, then shut down containment.',
+    component: Room19,
+  },
+  {
+    id: 20,
+    chapter: 4,
+    chapterTitle: 'The Glitched Abyss',
+    title: 'Room 20',
+    instruction: 'CONFRONT THE VOID CORE.',
+    defaultSuccessMessage: 'ELZZUP DEFEATED',
+    defaultSuccessSubmessage: '...for real.',
+    defaultTrollTitle: 'Core Retaliation',
+    defaultTrollMessage: 'Shatter shields descending, filter the deceptive core, and decompile root.',
+    hint: 'Phase 1: Gamma->Beta->Alpha. Phase 2: Filter->Purge Core. Phase 3: Spell P-U-Z-Z-L-E.',
+    component: Room20,
+  },
 ];
 
 export function getRoomById(id: number): RoomDefinition | undefined {
   return ROOMS.find((r) => r.id === id);
 }
 
-export const TOTAL_ROOMS = 10;
+export const TOTAL_ROOMS = 20;

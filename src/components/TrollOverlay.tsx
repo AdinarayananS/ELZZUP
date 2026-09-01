@@ -66,24 +66,26 @@ export const TrollOverlay: React.FC<TrollOverlayProps> = ({
           </h3>
 
           {/* Subtext description */}
-          <p className="font-mono text-[11px] sm:text-sm text-[#f0f0ff] max-w-md leading-relaxed mb-4 sm:mb-6">
-            {description}
-          </p>
+          <div className="bg-[#0c0c1e] border-2 border-black p-3 sm:p-4 mb-4 sm:mb-6 max-w-md w-full shadow-[2px_2px_0_0_#000]">
+            <p className="font-mono text-xs sm:text-sm text-[#f0f0ff] leading-relaxed font-medium">
+              {description}
+            </p>
+          </div>
 
           {/* RETRY Action Button */}
           <div className="relative my-1 sm:my-2 w-full max-w-xs flex justify-center">
             <button
               onClick={onRetry}
-              className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-[#ff4444] hover:bg-[#ff6666] text-white font-heading font-extrabold text-base sm:text-xl uppercase tracking-widest border-4 border-black shadow-[4px_4px_0_0_#000] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer flex items-center justify-center gap-2 select-none min-h-[48px]"
+              className="w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 bg-[#ff4444] hover:bg-[#ff6666] text-white font-heading font-extrabold text-base sm:text-xl uppercase tracking-widest border-4 border-black shadow-[4px_4px_0_0_#000] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer flex items-center justify-center gap-2 select-none min-h-[48px]"
             >
-              <RotateCcw size={18} />
+              <RotateCcw size={20} />
               <span>Retry</span>
             </button>
           </div>
 
           {/* Error code readout */}
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t-2 border-black w-full">
-            <span className="font-mono text-[9px] sm:text-[11px] text-[#a0a0d0] uppercase tracking-widest font-bold">
+            <span className="font-mono text-xs sm:text-sm text-[#ffdd00] uppercase tracking-wider font-bold">
               {errorCode}
             </span>
           </div>

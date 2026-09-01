@@ -225,6 +225,141 @@ class SoundEngine {
     osc2.stop(this.ctx.currentTime + 0.12);
   }
 
+  playMemeLaugh(soundEnabled = true, volume = 0.85) {
+    if (!soundEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    // Classic 8-bit meme laughter: "Ha-Ha-Ha-Haaa!" pitch burst
+    const laughNotes = [
+      { freq: 440, time: 0.0, dur: 0.08 },
+      { freq: 520, time: 0.11, dur: 0.08 },
+      { freq: 392, time: 0.22, dur: 0.08 },
+      { freq: 493, time: 0.33, dur: 0.14 },
+    ];
+
+    laughNotes.forEach((note) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(note.freq, this.ctx.currentTime + note.time);
+      osc.frequency.exponentialRampToValueAtTime(note.freq * 0.8, this.ctx.currentTime + note.time + note.dur);
+
+      gain.gain.setValueAtTime(0.22 * volume, this.ctx.currentTime + note.time);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + note.time + note.dur);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(this.ctx.currentTime + note.time);
+      osc.stop(this.ctx.currentTime + note.time + note.dur);
+    });
+  }
+
+  playBossImpact(soundEnabled = true, volume = 1.0) {
+    if (!soundEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    // Deep sub-bass boom + crashing noise burst
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.9);
+
+    gain.gain.setValueAtTime(0.4 * volume, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.95);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.95);
+  }
+
+  playRestoreChime(soundEnabled = true, volume = 0.6) {
+    if (!soundEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    // Gentle, peaceful harmonic progression for the restored world
+    const chords = [261.63, 329.63, 392.00, 523.25]; // C major chord
+    chords.forEach((freq, idx) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.12);
+
+      gain.gain.setValueAtTime(0.12 * volume, this.ctx.currentTime + idx * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.12 + 1.2);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(this.ctx.currentTime + idx * 0.12);
+      osc.stop(this.ctx.currentTime + idx * 0.12 + 1.2);
+    });
+  }
+
+  playPixelFirework(soundEnabled = true, volume = 0.5) {
+    if (!soundEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    // 8-bit whistle and pop
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+    osc.frequency.setValueAtTime(150, this.ctx.currentTime + 0.11);
+
+    gain.gain.setValueAtTime(0.18 * volume, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.25);
+  }
+
+  playVictoryFanfare(soundEnabled = true, volume = 0.8) {
+    if (!soundEnabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    // Classic 8-bit grand victory fanfare: C4 -> E4 -> G4 -> C5 -> G4 -> C5
+    const melody = [
+      { freq: 261.63, time: 0.0, dur: 0.14 },
+      { freq: 329.63, time: 0.15, dur: 0.14 },
+      { freq: 392.00, time: 0.30, dur: 0.14 },
+      { freq: 523.25, time: 0.45, dur: 0.28 },
+      { freq: 392.00, time: 0.75, dur: 0.14 },
+      { freq: 523.25, time: 0.90, dur: 0.60 },
+    ];
+
+    melody.forEach((note) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(note.freq, this.ctx.currentTime + note.time);
+
+      gain.gain.setValueAtTime(0.2 * volume, this.ctx.currentTime + note.time);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + note.time + note.dur);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(this.ctx.currentTime + note.time);
+      osc.stop(this.ctx.currentTime + note.time + note.dur);
+    });
+  }
+
   startMusic(musicEnabled = true, volume = 0.5) {
     if (!musicEnabled) {
       this.stopMusic();

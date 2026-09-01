@@ -17,27 +17,62 @@
   }
 
   body {
-    font-family: 'Press Start 2P', 'Space Mono', 'JetBrains Mono', monospace;
+    font-family: 'Space Mono', 'Silkscreen', 'Press Start 2P', 'JetBrains Mono', monospace;
     background-color: var(--color-surface-lowest);
     color: #f0f0ff;
     overflow-x: hidden;
     touch-action: manipulation;
+    letter-spacing: 0.02em;
   }
 
   h1, h2, h3, h4, .font-heading {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', 'Silkscreen', cursive;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
   }
 
   .font-mono-code {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrains Mono', 'Space Mono', monospace;
   }
 
   .font-pixel {
-    font-family: 'Press Start 2P', 'VT323', monospace;
+    font-family: 'Silkscreen', 'Press Start 2P', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .font-dialogue {
+    font-family: 'Space Mono', 'Silkscreen', monospace;
+    line-height: 1.5;
   }
 
   .font-arcade {
     font-family: 'Press Start 2P', cursive;
+  }
+
+  /* High contrast text outlines for authentic pixel legibility */
+  .pixel-text-outline {
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000,
+      2px 2px 0 #000;
+  }
+
+  .pixel-text-outline-gold {
+    text-shadow:
+      -1px -1px 0 #443300,
+      1px -1px 0 #443300,
+      -1px 1px 0 #443300,
+      1px 1px 0 #443300,
+      2px 2px 0 #000;
+  }
+
+  .pixel-clue-box {
+    background-color: #0c0c1e;
+    border: 3px solid #000000;
+    box-shadow: 3px 3px 0 0 #000000;
+    color: #f0f0ff;
   }
 }
 
