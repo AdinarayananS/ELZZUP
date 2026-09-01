@@ -85,9 +85,13 @@ export const Room1: React.FC<RoomComponentProps> = ({
       {/* Distraction/Ambient Wall Lever */}
       <div
         onClick={() => {
-          sound.playGlitch(soundEnabled);
+          onTroll(
+            "That's just a wall lever.",
+            'The giant glowing red button is literally right in the center.',
+            'ERR_WRONG_TARGET // DECOY_TRIGGERED'
+          );
         }}
-        title="Just decorative... or is it?"
+        title="Distraction lever"
         className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-20 flex flex-col items-center justify-end opacity-40 hover:opacity-90 transition-opacity cursor-pointer group"
       >
         <div className="w-2 h-12 bg-[#a0a0d0] border border-black origin-bottom -rotate-45 group-hover:rotate-45 transition-transform duration-200" />

@@ -87,25 +87,122 @@ class SoundEngine {
     });
   }
 
+  private lastMemeLaughTime = 0;
+
   playTroll(soundEnabled = true, volume = 0.8) {
     if (!soundEnabled) return;
+    this.playMemeLaugh(soundEnabled, volume);
+  }
+
+  playMemeLaugh(soundEnabled = true, volume = 0.85) {
+    if (!soundEnabled) return;
+    const now = Date.now();
+    // Anti-spam debounce: Prevent stacking multiple laughs on rapid clicks within 650ms
+    if (now - this.lastMemeLaughTime < 650) {
+      return;
+    }
+    this.lastMemeLaughTime = now;
+
     this.initContext();
     if (!this.ctx) return;
 
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(320, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.35);
+    // 3 distinct retro 8-bit meme laughter variations:
+    // 0: Classic "Ha-Ha-Ha-Haaa!"
+    // 1: Snarky rapid "A-Ha-Ha-Ha-Ha!"
+    // 2: Pitch-slide "Womp-HAHAHA!"
+    const variation = Math.floor(Math.random() * 3);
+    const pitchJitter = 0.96 + Math.random() * 0.08; // subtle organic pitch shift
 
-    gain.gain.setValueAtTime(0.25 * volume, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+    if (variation === 0) {
+      const laughNotes = [
+        { freq: 440 * pitchJitter, time: 0.0, dur: 0.075 },
+        { freq: 523.25 * pitchJitter, time: 0.09, dur: 0.075 },
+        { freq: 392.00 * pitchJitter, time: 0.18, dur: 0.075 },
+        { freq: 493.88 * pitchJitter, time: 0.27, dur: 0.14 },
+      ];
 
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
+      laughNotes.forEach((note) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(note.freq, this.ctx.currentTime + note.time);
+        osc.frequency.exponentialRampToValueAtTime(note.freq * 0.82, this.ctx.currentTime + note.time + note.dur);
 
-    osc.start();
-    osc.stop(this.ctx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.22 * volume, this.ctx.currentTime + note.time);
+        gain.gain.exponentialRampToValueAtTime(0.005, this.ctx.currentTime + note.time + note.dur);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(this.ctx.currentTime + note.time);
+        osc.stop(this.ctx.currentTime + note.time + note.dur);
+      });
+    } else if (variation === 1) {
+      const laughNotes = [
+        { freq: 520 * pitchJitter, time: 0.0, dur: 0.06 },
+        { freq: 520 * pitchJitter, time: 0.08, dur: 0.06 },
+        { freq: 580 * pitchJitter, time: 0.16, dur: 0.06 },
+        { freq: 660 * pitchJitter, time: 0.24, dur: 0.08 },
+        { freq: 440 * pitchJitter, time: 0.34, dur: 0.15 },
+      ];
+
+      laughNotes.forEach((note) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(note.freq, this.ctx.currentTime + note.time);
+        osc.frequency.exponentialRampToValueAtTime(note.freq * 0.85, this.ctx.currentTime + note.time + note.dur);
+
+        gain.gain.setValueAtTime(0.18 * volume, this.ctx.currentTime + note.time);
+        gain.gain.exponentialRampToValueAtTime(0.005, this.ctx.currentTime + note.time + note.dur);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(this.ctx.currentTime + note.time);
+        osc.stop(this.ctx.currentTime + note.time + note.dur);
+      });
+    } else {
+      // Womp-womp into cackle
+      const oscLow = this.ctx.createOscillator();
+      const gainLow = this.ctx.createGain();
+      oscLow.type = 'sawtooth';
+      oscLow.frequency.setValueAtTime(260 * pitchJitter, this.ctx.currentTime);
+      oscLow.frequency.linearRampToValueAtTime(90 * pitchJitter, this.ctx.currentTime + 0.22);
+
+      gainLow.gain.setValueAtTime(0.25 * volume, this.ctx.currentTime);
+      gainLow.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+      oscLow.connect(gainLow);
+      gainLow.connect(this.ctx.destination);
+      oscLow.start();
+      oscLow.stop(this.ctx.currentTime + 0.22);
+
+      const laughNotes = [
+        { freq: 480 * pitchJitter, time: 0.16, dur: 0.08 },
+        { freq: 580 * pitchJitter, time: 0.26, dur: 0.08 },
+        { freq: 700 * pitchJitter, time: 0.36, dur: 0.18 },
+      ];
+
+      laughNotes.forEach((note) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(note.freq, this.ctx.currentTime + note.time);
+        osc.frequency.exponentialRampToValueAtTime(note.freq * 0.78, this.ctx.currentTime + note.time + note.dur);
+
+        gain.gain.setValueAtTime(0.2 * volume, this.ctx.currentTime + note.time);
+        gain.gain.exponentialRampToValueAtTime(0.005, this.ctx.currentTime + note.time + note.dur);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(this.ctx.currentTime + note.time);
+        osc.stop(this.ctx.currentTime + note.time + note.dur);
+      });
+    }
   }
 
   playGlitch(soundEnabled = true, volume = 0.8) {
@@ -225,38 +322,6 @@ class SoundEngine {
     osc2.stop(this.ctx.currentTime + 0.12);
   }
 
-  playMemeLaugh(soundEnabled = true, volume = 0.85) {
-    if (!soundEnabled) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    // Classic 8-bit meme laughter: "Ha-Ha-Ha-Haaa!" pitch burst
-    const laughNotes = [
-      { freq: 440, time: 0.0, dur: 0.08 },
-      { freq: 520, time: 0.11, dur: 0.08 },
-      { freq: 392, time: 0.22, dur: 0.08 },
-      { freq: 493, time: 0.33, dur: 0.14 },
-    ];
-
-    laughNotes.forEach((note) => {
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(note.freq, this.ctx.currentTime + note.time);
-      osc.frequency.exponentialRampToValueAtTime(note.freq * 0.8, this.ctx.currentTime + note.time + note.dur);
-
-      gain.gain.setValueAtTime(0.22 * volume, this.ctx.currentTime + note.time);
-      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + note.time + note.dur);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(this.ctx.currentTime + note.time);
-      osc.stop(this.ctx.currentTime + note.time + note.dur);
-    });
-  }
-
   playBossImpact(soundEnabled = true, volume = 1.0) {
     if (!soundEnabled) return;
     this.initContext();
@@ -277,6 +342,12 @@ class SoundEngine {
 
     osc.start();
     osc.stop(this.ctx.currentTime + 0.95);
+  }
+
+  playEpicDefeat(soundEnabled = true, volume = 0.9) {
+    if (!soundEnabled) return;
+    this.playBossImpact(soundEnabled, volume);
+    this.playSuccess(soundEnabled, volume);
   }
 
   playRestoreChime(soundEnabled = true, volume = 0.6) {
@@ -417,3 +488,4 @@ class SoundEngine {
 }
 
 export const sound = new SoundEngine();
+export const soundEngine = sound;

@@ -168,7 +168,16 @@ export const Room5: React.FC<RoomComponentProps> = ({
             </button>
           ) : (
             /* Empty Pedestal Silhouette */
-            <div className="w-28 h-28 sm:w-36 sm:h-36 border-4 border-dashed border-[#555577]/50 flex flex-col items-center justify-center bg-black/30 p-2 text-center">
+            <div
+              onClick={() => {
+                onTroll(
+                  'It vanished, remember?',
+                  'Clicking empty air will not bring the button back. Look around the room!',
+                  'ERR_TARGET_MISSING'
+                );
+              }}
+              className="w-28 h-28 sm:w-36 sm:h-36 border-4 border-dashed border-[#555577]/50 flex flex-col items-center justify-center bg-black/30 p-2 text-center cursor-pointer hover:border-red-500 transition-colors"
+            >
               <span className="font-mono text-[9px] sm:text-[10px] text-[#ff6666] font-bold tracking-wider uppercase mb-1 animate-pulse">
                 [EMPTY]
               </span>

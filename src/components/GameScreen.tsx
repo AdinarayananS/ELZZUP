@@ -166,36 +166,82 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   // Handle Success trigger from room
-  const handleSuccess = (customTitle?: string, customSubtitle?: string) => {
+  const handleSuccess = (
+    customTitle?: string | { title?: string; subtitle?: string },
+    customSubtitle?: string
+  ) => {
     if (!roomDef) return;
     antiSpam.resetSpam();
     if (elapsedSeconds <= 4 && currentRoomId > 1) {
       triggerReaction('Oh.');
     }
+
+    let title = roomDef.defaultSuccessMessage;
+    let subtitle = roomDef.defaultSuccessSubmessage;
+    if (typeof customTitle === 'object' && customTitle !== null) {
+      title = customTitle.title || title;
+      subtitle = customTitle.subtitle || subtitle;
+    } else if (typeof customTitle === 'string') {
+      title = customTitle;
+      if (customSubtitle) subtitle = customSubtitle;
+    }
+
     setOverlayData({
-      successTitle: customTitle || roomDef.defaultSuccessMessage,
-      successSubtitle: customSubtitle || roomDef.defaultSuccessSubmessage,
+      successTitle: title,
+      successSubtitle: subtitle,
     });
     setOverlay('success');
   };
 
-  // Handle Troll / Failure trigger from room
+  // Centralized Global Wrong-Answer / Troll Reaction System
   const handleTroll = (title?: string, message?: string, errCode?: string) => {
     if (!roomDef) return;
     antiSpam.resetSpam();
     const newErrorCount = roomErrors + 1;
     setRoomErrors(newErrorCount);
-    setIsGlitching(true);
 
+    // 1. Brief glitch/shake effect
+    setIsGlitching(true);
+    setTimeout(() => setIsGlitching(false), 380);
+
+    // 2. Play the global meme laugh (with automatic spam/stacking debounce protection in audio engine)
+    sound.playMemeLaugh(settings.sound);
+
+    // 3. Dynamic Elzzup mocking reactions based on context and repeated mistakes
+    const generalMemeReactions = [
+      'HAHAHAHA!',
+      'NOPE.',
+      'HAHA! Nice try.',
+      'You actually clicked that?',
+      'Wrong.',
+      'Oh, that was painful.',
+      'HAHAHAHAHA!',
+      'Did you really think that would work?',
+    ];
+
+    const repeatedMemeReactions = [
+      'You\'re STILL doing that?',
+      'I thought you\'d have learned by now.',
+      'How many times are you gonna click that?',
+      'Are you just guessing at this point?',
+    ];
+
+    let chosenRemark = '';
     if (currentRoomId === 6) {
-      triggerReaction('I said don\'t.');
+      chosenRemark = 'I said don\'t.';
     } else if (currentRoomId === 8) {
-      triggerReaction('I warned you.');
-    } else if (newErrorCount >= 2) {
-      triggerReaction('Really?');
+      chosenRemark = 'I warned you.';
+    } else if (currentRoomId === 10) {
+      chosenRemark = 'Futile.';
+    } else if (currentRoomId === 20) {
+      chosenRemark = newErrorCount >= 2 ? 'AHAHAHA! IN ROOM 20?!' : 'HAHAHAHA!';
+    } else if (newErrorCount >= 3) {
+      chosenRemark = repeatedMemeReactions[Math.floor(Math.random() * repeatedMemeReactions.length)];
     } else {
-      triggerReaction('I saw that.');
+      chosenRemark = generalMemeReactions[Math.floor(Math.random() * generalMemeReactions.length)];
     }
+
+    triggerReaction(chosenRemark, 2400);
 
     setOverlayData({
       trollTitle: title || roomDef.defaultTrollTitle || 'OOPS.',

@@ -1,666 +1,414 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { RoomComponentProps } from '../types';
-import { sound } from '../audio';
-import {
-  Volume2,
-  VolumeX,
-  Zap,
-  CheckCircle2,
-  XCircle,
-  HelpCircle,
-  Eye,
-  Lock,
-  Unlock,
-  Sliders,
-  Sparkles,
-  Layers,
-  Key,
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { motion } from 'motion/react';
+import { Zap, Fan, RotateCcw, Lock, CheckCircle, Flame, Coffee, HelpCircle, ArrowRight } from 'lucide-react';
+import { soundEngine } from '../audio';
 
-const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+interface Room18Props {
+  onSuccess: (customMessage?: { title: string; subtitle: string }) => void;
+  onTroll: (customTitle?: string, customMessage?: string) => void;
+  soundEnabled: boolean;
+  onHintRequest?: (hint: string) => void;
+}
 
-export const Room18: React.FC<RoomComponentProps> = ({
+export const Room18: React.FC<Room18Props> = ({
   onSuccess,
   onTroll,
   soundEnabled,
 }) => {
-  // Stage state: 1, 2, or 3
-  const [currentStage, setCurrentStage] = useState<1 | 2 | 3>(1);
-  const [hintLevel, setHintLevel] = useState<number>(0);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [screenShake, setScreenShake] = useState(false);
-  const [failBanner, setFailBanner] = useState<string | null>(null);
+  // Stage 1: The Power Breaker & Overheated Fan
+  // Stage 2: Opposite Day Inversion (Reverse sequence)
+  // Stage 3: The Interactive Environment Combination Safe
+  const [stage, setStage] = useState<1 | 2 | 3>(1);
 
-  // Stage 1 State: Physical Alarm Dismantling
-  const [alarmCoverOpen, setAlarmCoverOpen] = useState(false);
-  const [batteryRemoved, setBatteryRemoved] = useState(false);
+  // --- STAGE 1 STATE ---
+  const [pluggedIn, setPluggedIn] = useState(false);
+  const [fanRunning, setFanRunning] = useState(true);
+  const [powerProgress, setPowerProgress] = useState(0);
 
-  // Stage 2 State: Chromatic Synthesis Lenses
-  const [redLight, setRedLight] = useState(false);
-  const [greenLight, setGreenLight] = useState(false);
-  const [blueLight, setBlueLight] = useState(false);
-  const [lensTested, setLensTested] = useState<{ 1: boolean; 2: boolean; 3: boolean }>({
-    1: false,
-    2: false,
-    3: false,
-  });
+  // --- STAGE 2 STATE ---
+  // Elzzup says: RED -> GREEN -> YELLOW -> BLUE
+  // Solution (Reverse): BLUE -> YELLOW -> GREEN -> RED
+  const correctSequence = ['BLUE', 'YELLOW', 'GREEN', 'RED'];
+  const [playerSequence, setPlayerSequence] = useState<string[]>([]);
 
-  // Stage 3 State: 3-Letter Vault Code (Target: K - E - Y)
-  const [dial1, setDial1] = useState(0); // A (0)
-  const [dial2, setDial2] = useState(0); // A (0)
-  const [dial3, setDial3] = useState(0); // A (0)
+  // --- STAGE 3 STATE ---
+  const [revealedCoffee, setRevealedCoffee] = useState(false);
+  const [revealedPicture, setRevealedPicture] = useState(false);
+  const [revealedThermostat, setRevealedThermostat] = useState(false);
+  const [dial1, setDial1] = useState(0);
+  const [dial2, setDial2] = useState(0);
+  const [dial3, setDial3] = useState(0);
+  const [safeOpened, setSafeOpened] = useState(false);
 
-  // Victory Sequence
-  const [victoryPhase, setVictoryPhase] = useState<'idle' | 'freeze' | 'cleared' | 'elzzup-reaction'>('idle');
+  // --- STAGE 1 HANDLERS ---
+  const togglePlug = () => {
+    soundEngine.playClick(soundEnabled);
+    const newPlugState = !pluggedIn;
+    setPluggedIn(newPlugState);
 
-  const timersRef = useRef<number[]>([]);
-
-  useEffect(() => {
-    return () => {
-      timersRef.current.forEach((t) => clearTimeout(t));
-    };
-  }, []);
-
-  // Update lens tested flags when player discovers dual-beam letters
-  useEffect(() => {
-    if (redLight && greenLight) setLensTested((prev) => ({ ...prev, 1: true }));
-    if (greenLight && blueLight) setLensTested((prev) => ({ ...prev, 2: true }));
-    if (redLight && blueLight) setLensTested((prev) => ({ ...prev, 3: true }));
-  }, [redLight, greenLight, blueLight]);
-
-  // Stage-specific Progressive Hints
-  const HINTS: Record<1 | 2 | 3, Array<{ level: number; title: string; text: string }>> = {
-    1: [
-      {
-        level: 1,
-        title: 'HINT 1 [DISCOVER THE RULE]',
-        text: "Elzzup: \"You've been staring at the digital console for ten minutes. Stop trying to click the digital breaker when the alarm is a physical box right on the wall.\"",
-      },
-      {
-        level: 2,
-        title: 'HINT 2 [DIRECT]',
-        text: "Elzzup: \"Click the siren housing on the top right wall to unlatch the front cover, then remove the live power cell.\"",
-      },
-      {
-        level: 3,
-        title: 'HINT 3 [STRONG]',
-        text: "Elzzup: \"Click the siren box -> Click 'PULL BATTERY' -> The master alarm interlock will disengage.\"",
-      },
-    ],
-    2: [
-      {
-        level: 1,
-        title: 'HINT 1 [APPLY THE RULE]',
-        text: "Elzzup: \"The spectral glass isn't broken. A single light beam only illuminates half a glyph. What happens when two primary color switches overlap on the same lens?\"",
-      },
-      {
-        level: 2,
-        title: 'HINT 2 [CONNECTION]',
-        text: "Elzzup: \"Test Red + Green on Lens 1, Green + Blue on Lens 2, and Red + Blue on Lens 3 to synthesize all 3 letters.\"",
-      },
-      {
-        level: 3,
-        title: 'HINT 3 [STRONG]',
-        text: "Elzzup: \"Once all 3 dual-wavelength letters have been revealed in the lenses, press 'PROCEED TO DIAL TERMINAL'.\"",
-      },
-    ],
-    3: [
-      {
-        level: 1,
-        title: 'HINT 1 [COMBINE]',
-        text: "Elzzup: \"Combine what you discovered: The 3 letters decoded from the lenses form a 3-letter word that unlocks gates.\"",
-      },
-      {
-        level: 2,
-        title: 'HINT 2 [DIRECT]',
-        text: "Elzzup: \"Lens 1 = K, Lens 2 = E, Lens 3 = Y. Rotate the 3 physical dials to match the word.\"",
-      },
-      {
-        level: 3,
-        title: 'HINT 3 [NEAR-SOLUTION]',
-        text: "Elzzup: \"Set Dial 1 to 'K', Dial 2 to 'E', Dial 3 to 'Y', and press 'ENGAGE GATE OVERRIDE'.\"",
-      },
-    ],
+    if (newPlugState) {
+      if (fanRunning) {
+        // Fan is draining power! Stalls at 30%
+        setPowerProgress(30);
+      } else {
+        // Fan is off! Full power!
+        setPowerProgress(100);
+        soundEngine.playSuccess(soundEnabled);
+        setTimeout(() => setStage(2), 700);
+      }
+    } else {
+      setPowerProgress(0);
+    }
   };
 
-  const handleCycleHint = () => {
-    sound.playClick(soundEnabled);
-    setHintLevel((prev) => (prev >= 3 ? 1 : prev + 1));
+  const toggleFan = () => {
+    soundEngine.playButtonPress(soundEnabled);
+    const newFanState = !fanRunning;
+    setFanRunning(newFanState);
+
+    if (pluggedIn) {
+      if (!newFanState) {
+        // Turn off fan while plugged in -> power surges to 100%!
+        setPowerProgress(100);
+        soundEngine.playSuccess(soundEnabled);
+        setTimeout(() => setStage(2), 700);
+      } else {
+        setPowerProgress(30);
+      }
+    }
   };
 
-  // --- STAGE 1: PHYSICAL SIREN INTERACTION ---
-  const handleToggleAlarmCover = () => {
-    if (isProcessing || currentStage !== 1) return;
-    sound.playLatchOpen(soundEnabled);
-    setAlarmCoverOpen((prev) => !prev);
-  };
+  // --- STAGE 2 HANDLERS ---
+  const handleColorButtonClick = (color: string) => {
+    soundEngine.playButtonPress(soundEnabled);
+    const newSeq = [...playerSequence, color];
+    setPlayerSequence(newSeq);
 
-  const handleRemoveBattery = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (batteryRemoved || isProcessing || currentStage !== 1) return;
-    sound.playSuccess(soundEnabled, 0.4);
-    setBatteryRemoved(true);
-    setIsProcessing(true);
-
-    const t = window.setTimeout(() => {
-      setIsProcessing(false);
-      setHintLevel(0);
-      setCurrentStage(2);
-    }, 1200);
-    timersRef.current.push(t);
-  };
-
-  // Decoy Digital Breaker
-  const handleDecoyBreaker = () => {
-    if (isProcessing) return;
-    sound.playGlitch(soundEnabled);
-    setScreenShake(true);
-    setFailBanner('DECOY BREAKER TRIPPED! Physical alarm is hardwired to the wall unit.');
-
-    const laughTimer = window.setTimeout(() => sound.playMemeLaugh(soundEnabled), 150);
-    timersRef.current.push(laughTimer);
-
-    const shakeStop = window.setTimeout(() => setScreenShake(false), 500);
-    timersRef.current.push(shakeStop);
-
-    const bannerClear = window.setTimeout(() => setFailBanner(null), 3000);
-    timersRef.current.push(bannerClear);
-  };
-
-  // --- STAGE 2: ADVANCE FROM CHROMATIC LENSES ---
-  const handleAdvanceFromStage2 = () => {
-    if (isProcessing || currentStage !== 2) return;
-    const allDiscovered = lensTested[1] && lensTested[2] && lensTested[3];
-    if (!allDiscovered) {
-      sound.playGlitch(soundEnabled);
-      setScreenShake(true);
-      setFailBanner('INCOMPLETE SPECTRUM: Discover all 3 dual-beam letters (R+G, G+B, R+B) first!');
-      const laughTimer = window.setTimeout(() => sound.playMemeLaugh(soundEnabled), 150);
-      timersRef.current.push(laughTimer);
-      const shakeStop = window.setTimeout(() => setScreenShake(false), 500);
-      timersRef.current.push(shakeStop);
-      const bannerClear = window.setTimeout(() => setFailBanner(null), 2500);
-      timersRef.current.push(bannerClear);
+    // Check if matching prefix of correctSequence
+    const currentIndex = newSeq.length - 1;
+    if (newSeq[currentIndex] !== correctSequence[currentIndex]) {
+      // Wrong sequence!
+      soundEngine.playGlitch(soundEnabled);
+      soundEngine.playMemeLaugh(soundEnabled);
+      onTroll(
+        'Obeyed Elzzup Again!',
+        'You followed Elzzup\'s exact order! It\'s Opposite Day: you should have reversed the entire sequence.'
+      );
+      setPlayerSequence([]);
       return;
     }
 
-    sound.playSuccess(soundEnabled);
-    setIsProcessing(true);
-    const t = window.setTimeout(() => {
-      setIsProcessing(false);
-      setHintLevel(0);
-      setCurrentStage(3);
-    }, 800);
-    timersRef.current.push(t);
-  };
-
-  // --- STAGE 3: DIAL ROTATION & SUBMIT ---
-  const handleCycleDial = (dialIndex: 1 | 2 | 3, direction: 1 | -1) => {
-    if (isProcessing || currentStage !== 3) return;
-    sound.playClick(soundEnabled);
-
-    if (dialIndex === 1) {
-      setDial1((prev) => (prev + direction + 26) % 26);
-    } else if (dialIndex === 2) {
-      setDial2((prev) => (prev + direction + 26) % 26);
-    } else {
-      setDial3((prev) => (prev + direction + 26) % 26);
+    // If completed all 4 in reverse order
+    if (newSeq.length === 4) {
+      soundEngine.playSuccess(soundEnabled);
+      setTimeout(() => setStage(3), 700);
     }
   };
 
-  const handleEngageOverride = () => {
-    if (isProcessing || currentStage !== 3) return;
-    sound.playClick(soundEnabled);
+  // --- STAGE 3 HANDLERS ---
+  const handleDialClick = (dialNum: 1 | 2 | 3) => {
+    soundEngine.playClick(soundEnabled);
+    if (dialNum === 1) setDial1((prev) => (prev + 1) % 10);
+    if (dialNum === 2) setDial2((prev) => (prev + 1) % 10);
+    if (dialNum === 3) setDial3((prev) => (prev + 1) % 10);
+  };
 
-    const currentCode = `${ALPHABET[dial1]}${ALPHABET[dial2]}${ALPHABET[dial3]}`;
-    setIsProcessing(true);
-
-    if (currentCode === 'KEY') {
-      sound.playSuccess(soundEnabled);
-      const t1 = window.setTimeout(() => {
-        setVictoryPhase('freeze');
-        setScreenShake(true);
-
-        const t2 = window.setTimeout(() => {
-          setVictoryPhase('cleared');
-          setScreenShake(false);
-          sound.playLatchOpen(soundEnabled);
-
-          const t3 = window.setTimeout(() => {
-            setVictoryPhase('elzzup-reaction');
-
-            const t4 = window.setTimeout(() => {
-              onSuccess(
-                'GATE 18 OVERRIDDEN',
-                'You dismantled the physical alarm, synthesized the chromatic wavelengths, and combined the discoveries into the True Key.'
-              );
-            }, 2200);
-            timersRef.current.push(t4);
-          }, 1800);
-          timersRef.current.push(t3);
-        }, 800);
-        timersRef.current.push(t2);
-      }, 600);
-      timersRef.current.push(t1);
+  const handlePullSafeLever = () => {
+    soundEngine.playButtonPress(soundEnabled);
+    // Correct combination is 3 - 6 - 9
+    if (dial1 === 3 && dial2 === 6 && dial3 === 9) {
+      soundEngine.playLatchOpen(soundEnabled);
+      soundEngine.playSuccess(soundEnabled);
+      setSafeOpened(true);
+      setTimeout(() => {
+        onSuccess({
+          title: 'Floor 18 Overridden!',
+          subtitle: 'You turned off the power-hogging fan, reversed Elzzup\'s orders, and found the 3-6-9 vault code.',
+        });
+      }, 900);
     } else {
-      sound.playGlitch(soundEnabled);
-      setScreenShake(true);
-      setFailBanner(`INCORRECT CIPHER [${currentCode}]. TARGET WORD IS K - E - Y.`);
-
-      const laughTimer = window.setTimeout(() => sound.playMemeLaugh(soundEnabled), 150);
-      timersRef.current.push(laughTimer);
-
-      const shakeStop = window.setTimeout(() => setScreenShake(false), 500);
-      timersRef.current.push(shakeStop);
-
-      const resetTimer = window.setTimeout(() => {
-        setIsProcessing(false);
-        setFailBanner(null);
-      }, 2500);
-      timersRef.current.push(resetTimer);
+      soundEngine.playTroll(soundEnabled);
+      soundEngine.playMemeLaugh(soundEnabled);
+      onTroll(
+        'Safe Jammed!',
+        `Current code: ${dial1}-${dial2}-${dial3}. Inspect the room environment (the mug, picture, and thermostat) to find the 3 digits!`
+      );
     }
   };
 
   return (
-    <div
-      className={`relative w-full h-full flex flex-col items-center justify-between p-2 sm:p-4 select-none ${
-        screenShake ? 'animate-bounce' : ''
-      }`}
-    >
-      {/* Top Chamber Header & Stage Progress Bar */}
-      <div className="w-full max-w-2xl flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
-        <div className="font-pixel text-[11px] sm:text-xs text-[#ffdd00] tracking-wider uppercase font-bold flex items-center gap-1.5 bg-[#0c0c1e] border-2 border-black px-2.5 py-1 shadow-[2px_2px_0_0_#000]">
-          <Layers size={14} className="text-[#ffdd00]" />
-          <span>CHAMBER 18: DUAL-CIPHER VAULT</span>
-        </div>
-
-        {/* 3-Stage Progress Indicator */}
-        <div className="flex items-center gap-1.5 bg-[#101026] border-2 border-black px-2 py-1 shadow-[2px_2px_0_0_#000]">
-          <span className="font-pixel text-[9px] text-[#a0a0d0] font-bold mr-1">
-            STAGES:
-          </span>
-          {[1, 2, 3].map((stg) => (
-            <span
-              key={stg}
-              className={`px-2 py-0.5 font-pixel text-[9px] font-black border border-black ${
-                currentStage === stg
-                  ? 'bg-[#ffdd00] text-black shadow-[0_0_8px_#ffdd00]'
-                  : currentStage > stg
-                  ? 'bg-[#44ff44] text-black'
-                  : 'bg-[#1e1e38] text-[#666688]'
-              }`}
-            >
-              STAGE {stg}
-            </span>
-          ))}
-        </div>
+    <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-4">
+      {/* STAGE HEADER PILL */}
+      <div className="mb-4 flex items-center gap-2 bg-slate-900/90 border-2 border-indigo-500/50 px-4 py-1.5 rounded-full shadow-lg">
+        <span className="text-xs font-mono text-indigo-400 uppercase tracking-widest font-bold">
+          STAGE {stage} OF 3
+        </span>
+        <span className="text-slate-600">•</span>
+        <span className="text-xs font-mono text-slate-300">
+          {stage === 1 && 'The Greedy Cooling Fan'}
+          {stage === 2 && 'Opposite Day Protocol'}
+          {stage === 3 && 'The Interactive Vault'}
+        </span>
       </div>
 
-      {/* Main Interactive Chamber Console */}
-      <div className="w-full max-w-2xl bg-[#181832] border-4 sm:border-6 border-black p-3 sm:p-5 shadow-[6px_6px_0_0_#000] flex flex-col items-center gap-3">
-        {/* Error / Failure Banner */}
-        {failBanner && (
-          <div className="w-full bg-[#ff4444] text-black p-2 border-3 border-black shadow-[3px_3px_0_0_#000] flex items-center justify-between animate-bounce">
-            <div className="flex items-center gap-1.5 font-heading font-black text-xs uppercase">
-              <XCircle size={16} className="text-black shrink-0" />
-              <span>{failBanner}</span>
+      {/* STAGE 1: POWER BREAKER & COOLING FAN */}
+      {stage === 1 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full flex flex-col items-center gap-6 bg-slate-900/95 border-4 border-slate-700 rounded-xl p-6 shadow-2xl"
+        >
+          <div className="text-center">
+            <h3 className="text-lg md:text-xl font-bold font-mono text-indigo-400 tracking-wider">
+              ⚡ STAGE 18.1: CHARGE THE MAIN CAPACITOR TO 100%
+            </h3>
+            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
+              "Plug in the power cable, but warning: this industrial cooling fan draws WAY too much juice!"
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-around gap-6 w-full max-w-md bg-slate-950/80 p-6 rounded-lg border border-slate-800">
+            {/* POWER OUTLET & PLUG */}
+            <div className="flex flex-col items-center gap-3">
+              <span className="text-xs font-mono font-bold text-slate-300">
+                WALL OUTLET
+              </span>
+              <button
+                id="power-cord-button"
+                onClick={togglePlug}
+                className={`px-4 py-3 rounded-lg border-2 font-mono text-xs font-bold transition-all flex items-center gap-2 ${
+                  pluggedIn
+                    ? 'bg-amber-600 border-amber-400 text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]'
+                    : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-amber-400'
+                }`}
+              >
+                <Zap className={`w-4 h-4 ${pluggedIn ? 'text-amber-300' : 'text-slate-500'}`} />
+                {pluggedIn ? '🔌 CORD: PLUGGED IN' : '🔌 CORD: UNPLUGGED'}
+              </button>
+            </div>
+
+            {/* INDUSTRIAL COOLING FAN */}
+            <div className="flex flex-col items-center gap-3">
+              <span className="text-xs font-mono font-bold text-slate-300">
+                COOLING FAN
+              </span>
+              <button
+                id="fan-toggle-button"
+                onClick={toggleFan}
+                className={`px-4 py-3 rounded-lg border-2 font-mono text-xs font-bold transition-all flex items-center gap-2 ${
+                  fanRunning
+                    ? 'bg-cyan-950 border-cyan-500 text-cyan-300'
+                    : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-400'
+                }`}
+              >
+                <motion.div
+                  animate={fanRunning ? { rotate: 360 } : { rotate: 0 }}
+                  transition={fanRunning ? { repeat: Infinity, duration: 0.5, ease: 'linear' } : {}}
+                >
+                  <Fan className="w-4 h-4" />
+                </motion.div>
+                {fanRunning ? '💨 FAN: RUNNING (DRAINING)' : '🛑 FAN: STOPPED (SAVING)'}
+              </button>
             </div>
           </div>
-        )}
 
-        {/* --- STAGE 1: DISCOVER THE RULE (Dismantle Physical Alarm) --- */}
-        {currentStage === 1 && (
-          <div className="w-full flex flex-col items-center gap-3 animate-fadeIn">
-            <div className="w-full bg-[#101026] border-2 border-[#ffdd00] p-2 flex items-center justify-between">
-              <span className="font-pixel text-xs text-[#ffdd00] font-black uppercase">
-                STAGE 1 / 3: DISCOVER THE PHYSICAL INTERLOCK RULE
-              </span>
-              <span className="font-mono text-[9px] text-[#ff8888] font-bold">
-                SIREN LOCKOUT
+          {/* POWER CHARGE BAR */}
+          <div className="w-full max-w-md flex flex-col gap-2">
+            <div className="flex justify-between text-xs font-mono text-slate-300">
+              <span>BATTERY LEVEL:</span>
+              <span className={powerProgress === 100 ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
+                {powerProgress}%
               </span>
             </div>
+            <div className="w-full h-4 bg-slate-800 border border-slate-600 rounded-full overflow-hidden">
+              <motion.div
+                className={`h-full transition-all duration-500 ${
+                  powerProgress === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]' : 'bg-amber-500'
+                }`}
+                style={{ width: `${powerProgress}%` }}
+              />
+            </div>
+            {pluggedIn && fanRunning && (
+              <span className="text-[11px] font-mono text-red-400 text-center animate-pulse">
+                ⚠️ Fan is consuming 70% power! Turn it off to reach 100%!
+              </span>
+            )}
+          </div>
+        </motion.div>
+      )}
 
-            {/* Physical Siren Box mounted on Chamber Wall */}
-            <div
-              onClick={handleToggleAlarmCover}
-              className={`w-full cursor-pointer border-3 border-black p-3 shadow-[4px_4px_0_0_#000] flex items-center justify-between transition-all active:scale-98 ${
-                batteryRemoved
-                  ? 'bg-[#1a2e1a] text-[#44ff44] border-[#44ff44]'
-                  : 'bg-[#3a0a10] text-[#ff4444] border-[#ff4444] animate-pulse'
-              }`}
+      {/* STAGE 2: OPPOSITE DAY INVERSION */}
+      {stage === 2 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full flex flex-col items-center gap-6 bg-slate-900/95 border-4 border-slate-700 rounded-xl p-6 shadow-2xl"
+        >
+          <div className="text-center">
+            <h3 className="text-lg md:text-xl font-bold font-mono text-cyan-400 tracking-wider">
+              🔄 STAGE 18.2: OPPOSITE DAY PROTOCOL
+            </h3>
+            <p className="text-xs md:text-sm font-mono text-amber-300 font-bold mt-1">
+              📢 ELZZUP: "Press RED, then GREEN, then YELLOW, then BLUE! Hurry!"
+            </p>
+          </div>
+
+          <div className="bg-amber-950/40 border border-amber-500/40 px-3 py-1.5 rounded text-[11px] font-mono text-amber-300 text-center">
+            ⚠️ NOTICE: Opposite Day Protocol is active. Reverse everything Elzzup says!
+          </div>
+
+          {/* 4 COLOR BUTTONS */}
+          <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+            {[
+              { name: 'RED', bg: 'bg-red-600 hover:bg-red-500 border-red-400' },
+              { name: 'GREEN', bg: 'bg-green-600 hover:bg-green-500 border-green-400' },
+              { name: 'YELLOW', bg: 'bg-amber-500 hover:bg-amber-400 border-amber-300 text-black' },
+              { name: 'BLUE', bg: 'bg-blue-600 hover:bg-blue-500 border-blue-400' },
+            ].map((col) => (
+              <motion.button
+                key={col.name}
+                id={`opposite-btn-${col.name.toLowerCase()}`}
+                onClick={() => handleColorButtonClick(col.name)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`py-4 px-6 rounded-lg font-mono font-black text-sm tracking-wider border-2 shadow-lg cursor-pointer ${col.bg}`}
+              >
+                {col.name}
+              </motion.button>
+            ))}
+          </div>
+
+          {/* PROGRESS DISPLAY */}
+          <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
+            <span>INPUT:</span>
+            {playerSequence.length === 0 ? (
+              <span className="text-slate-600">[ Waiting for first reversed button... ]</span>
+            ) : (
+              playerSequence.map((c, i) => (
+                <span key={i} className="bg-slate-800 text-slate-200 px-2 py-0.5 rounded border border-slate-700 font-bold">
+                  {c}
+                </span>
+              ))
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* STAGE 3: INTERACTIVE COMBINATION VAULT */}
+      {stage === 3 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full flex flex-col items-center gap-6 bg-slate-900/95 border-4 border-slate-700 rounded-xl p-6 shadow-2xl"
+        >
+          <div className="text-center">
+            <h3 className="text-lg md:text-xl font-bold font-mono text-amber-400 tracking-wider">
+              🔐 STAGE 18.3: THE 3-DIGIT COMBINATION VAULT
+            </h3>
+            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
+              "The 3 secret digits are hidden somewhere in this room. Click around to find them!"
+            </p>
+          </div>
+
+          {/* INTERACTIVE ENVIRONMENT OBJECTS */}
+          <div className="grid grid-cols-3 gap-3 w-full max-w-md">
+            {/* OBJECT 1: COFFEE MUG */}
+            <button
+              id="env-coffee-mug"
+              onClick={() => {
+                soundEngine.playClick(soundEnabled);
+                setRevealedCoffee(true);
+              }}
+              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors"
             >
-              <div className="flex items-center gap-2.5">
-                {batteryRemoved ? (
-                  <VolumeX size={20} className="text-[#44ff44]" />
-                ) : (
-                  <Volume2 size={20} className="text-[#ff4444] animate-bounce" />
-                )}
-                <div className="flex flex-col text-left">
-                  <span className="font-pixel text-xs font-black uppercase tracking-wider">
-                    {batteryRemoved ? 'SIREN: MUTED [OFFLINE]' : 'MASTER ALARM BEACON [BLARING]'}
-                  </span>
-                  <span className="font-mono text-[9px] text-[#a0a0d0] font-bold">
-                    {alarmCoverOpen ? '[CASING OPENED — EXPOSED POWER CELL]' : '[CLICK CASING TO UNLATCH FRONT COVER]'}
-                  </span>
-                </div>
-              </div>
-
-              {alarmCoverOpen && (
-                <div>
-                  {!batteryRemoved ? (
-                    <button
-                      onClick={handleRemoveBattery}
-                      className="px-3 py-1 bg-[#ffdd00] hover:bg-[#ffee44] text-black font-mono text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0_0_#000] animate-pulse cursor-pointer"
-                    >
-                      PULL BATTERY ⚡
-                    </button>
-                  ) : (
-                    <span className="font-mono text-xs text-[#44ff44] font-black">
-                      [POWER CELL EJECTED ✓]
-                    </span>
-                  )}
-                </div>
+              <div className="text-2xl group-hover:rotate-12 transition-transform">☕</div>
+              <span className="text-[10px] font-mono text-slate-400">Coffee Mug</span>
+              {revealedCoffee ? (
+                <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-700">
+                  Digit 1 = 3
+                </span>
+              ) : (
+                <span className="text-[9px] font-mono text-slate-500">(Click to tip)</span>
               )}
-            </div>
-
-            {/* Decoy Digital Breaker Box */}
-            <div className="w-full bg-[#101026] border-2 border-black p-2.5 flex items-center justify-between">
-              <div className="font-mono text-[10px] text-[#8888aa]">
-                Digital Circuit Breaker (Software Bypass Interface)
-              </div>
-              <button
-                onClick={handleDecoyBreaker}
-                className="px-3 py-1 bg-[#2a1018] hover:bg-[#3a1520] text-[#ff8888] border border-black font-pixel text-[9px] uppercase font-bold cursor-pointer"
-              >
-                TRIP DIGITAL BREAKER
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* --- STAGE 2: APPLY THE RULE (Chromatic Dual-Beam Synthesis) --- */}
-        {currentStage === 2 && (
-          <div className="w-full flex flex-col items-center gap-3 animate-fadeIn">
-            <div className="w-full bg-[#101026] border-2 border-[#00f0ff] p-2 flex items-center justify-between">
-              <span className="font-pixel text-xs text-[#00f0ff] font-black uppercase">
-                STAGE 2 / 3: SYNTHESIZE DUAL-WAVELENGTH PHOSPHORS
-              </span>
-              <Sliders size={14} className="text-[#00f0ff]" />
-            </div>
-
-            {/* Color Switchboard */}
-            <div className="w-full grid grid-cols-3 gap-2">
-              <button
-                onClick={() => {
-                  sound.playClick(soundEnabled);
-                  setRedLight((p) => !p);
-                }}
-                className={`py-2 px-1 border-2 border-black font-pixel text-xs font-black uppercase shadow-[2px_2px_0_0_#000] cursor-pointer transition-all ${
-                  redLight
-                    ? 'bg-[#ff4444] text-black shadow-[0_0_10px_#ff4444]'
-                    : 'bg-[#2a1018] text-[#ff8888]'
-                }`}
-              >
-                RED [{redLight ? 'ON' : 'OFF'}]
-              </button>
-
-              <button
-                onClick={() => {
-                  sound.playClick(soundEnabled);
-                  setGreenLight((p) => !p);
-                }}
-                className={`py-2 px-1 border-2 border-black font-pixel text-xs font-black uppercase shadow-[2px_2px_0_0_#000] cursor-pointer transition-all ${
-                  greenLight
-                    ? 'bg-[#44ff44] text-black shadow-[0_0_10px_#44ff44]'
-                    : 'bg-[#102a18] text-[#88ff88]'
-                }`}
-              >
-                GRN [{greenLight ? 'ON' : 'OFF'}]
-              </button>
-
-              <button
-                onClick={() => {
-                  sound.playClick(soundEnabled);
-                  setBlueLight((p) => !p);
-                }}
-                className={`py-2 px-1 border-2 border-black font-pixel text-xs font-black uppercase shadow-[2px_2px_0_0_#000] cursor-pointer transition-all ${
-                  blueLight
-                    ? 'bg-[#00f0ff] text-black shadow-[0_0_10px_#00f0ff]'
-                    : 'bg-[#10182a] text-[#88ddff]'
-                }`}
-              >
-                BLU [{blueLight ? 'ON' : 'OFF'}]
-              </button>
-            </div>
-
-            {/* Spectral Phosphor Lenses */}
-            <div className="w-full grid grid-cols-3 gap-2 sm:gap-3 py-1">
-              {/* Lens 1 */}
-              <div className="h-20 bg-black border-2 border-black flex flex-col items-center justify-center p-1 relative overflow-hidden shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
-                <span className="absolute top-1 left-1.5 font-mono text-[8px] text-[#666688] font-bold">
-                  LENS 1 (R+G)
-                </span>
-                {redLight && greenLight ? (
-                  <div className="font-pixel font-black text-3xl text-[#ffdd00] drop-shadow-[0_0_8px_#ffdd00] animate-pulse">
-                    K
-                  </div>
-                ) : redLight ? (
-                  <div className="font-mono font-black text-2xl text-[#ff4444] opacity-70">
-                    | &lt;
-                  </div>
-                ) : greenLight ? (
-                  <div className="font-mono font-black text-2xl text-[#44ff44] opacity-70">
-                    &lt;
-                  </div>
-                ) : (
-                  <div className="font-mono text-[9px] text-[#444466] uppercase font-bold">[BLANK]</div>
-                )}
-              </div>
-
-              {/* Lens 2 */}
-              <div className="h-20 bg-black border-2 border-black flex flex-col items-center justify-center p-1 relative overflow-hidden shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
-                <span className="absolute top-1 left-1.5 font-mono text-[8px] text-[#666688] font-bold">
-                  LENS 2 (G+B)
-                </span>
-                {greenLight && blueLight ? (
-                  <div className="font-pixel font-black text-3xl text-[#00f0ff] drop-shadow-[0_0_8px_#00f0ff] animate-pulse">
-                    E
-                  </div>
-                ) : greenLight ? (
-                  <div className="font-mono font-black text-2xl text-[#44ff44] opacity-70">[</div>
-                ) : blueLight ? (
-                  <div className="font-mono font-black text-2xl text-[#00f0ff] opacity-70">---</div>
-                ) : (
-                  <div className="font-mono text-[9px] text-[#444466] uppercase font-bold">[BLANK]</div>
-                )}
-              </div>
-
-              {/* Lens 3 */}
-              <div className="h-20 bg-black border-2 border-black flex flex-col items-center justify-center p-1 relative overflow-hidden shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
-                <span className="absolute top-1 left-1.5 font-mono text-[8px] text-[#666688] font-bold">
-                  LENS 3 (R+B)
-                </span>
-                {redLight && blueLight ? (
-                  <div className="font-pixel font-black text-3xl text-[#ff00ea] drop-shadow-[0_0_8px_#ff00ea] animate-pulse">
-                    Y
-                  </div>
-                ) : redLight ? (
-                  <div className="font-mono font-black text-2xl text-[#ff4444] opacity-70">\ /</div>
-                ) : blueLight ? (
-                  <div className="font-mono font-black text-2xl text-[#00f0ff] opacity-70">|</div>
-                ) : (
-                  <div className="font-mono text-[9px] text-[#444466] uppercase font-bold">[BLANK]</div>
-                )}
-              </div>
-            </div>
-
-            <button
-              onClick={handleAdvanceFromStage2}
-              className="w-full py-2.5 bg-[#00f0ff] hover:bg-[#66f6ff] text-black border-3 border-black font-heading font-black text-xs uppercase shadow-[3px_3px_0_0_#000] cursor-pointer"
-            >
-              PROCEED TO DIAL TERMINAL ➔
             </button>
-          </div>
-        )}
 
-        {/* --- STAGE 3: COMBINE (The Final Cipher Dials) --- */}
-        {currentStage === 3 && (
-          <div className="w-full flex flex-col items-center gap-3 animate-fadeIn">
-            <div className="w-full bg-[#101026] border-2 border-[#ffdd00] p-2 flex items-center justify-between">
-              <span className="font-pixel text-xs text-[#ffdd00] font-black uppercase flex items-center gap-1.5">
-                <Key size={14} />
-                STAGE 3 / 3: COMBINE DISCOVERIES INTO THE VAULT CIPHER
-              </span>
-              <Unlock size={14} className="text-[#44ff44]" />
-            </div>
-
-            <div className="flex items-center justify-center gap-3 sm:gap-4 my-1">
-              {/* DIAL 1 */}
-              <div className="flex flex-col items-center gap-1">
-                <button
-                  onClick={() => handleCycleDial(1, 1)}
-                  className="w-10 h-7 bg-[#2a2a4a] hover:bg-[#ffdd00] text-[#f0f0ff] hover:text-black border-2 border-black font-pixel text-xs font-black shadow-[1px_1px_0_0_#000] cursor-pointer"
-                >
-                  ▲
-                </button>
-                <div className="w-14 h-14 bg-black border-3 border-[#ffdd00] flex items-center justify-center font-heading font-black text-2xl text-[#ffdd00]">
-                  {ALPHABET[dial1]}
-                </div>
-                <button
-                  onClick={() => handleCycleDial(1, -1)}
-                  className="w-10 h-7 bg-[#2a2a4a] hover:bg-[#ffdd00] text-[#f0f0ff] hover:text-black border-2 border-black font-pixel text-xs font-black shadow-[1px_1px_0_0_#000] cursor-pointer"
-                >
-                  ▼
-                </button>
-              </div>
-
-              {/* DIAL 2 */}
-              <div className="flex flex-col items-center gap-1">
-                <button
-                  onClick={() => handleCycleDial(2, 1)}
-                  className="w-10 h-7 bg-[#2a2a4a] hover:bg-[#ffdd00] text-[#f0f0ff] hover:text-black border-2 border-black font-pixel text-xs font-black shadow-[1px_1px_0_0_#000] cursor-pointer"
-                >
-                  ▲
-                </button>
-                <div className="w-14 h-14 bg-black border-3 border-[#ffdd00] flex items-center justify-center font-heading font-black text-2xl text-[#ffdd00]">
-                  {ALPHABET[dial2]}
-                </div>
-                <button
-                  onClick={() => handleCycleDial(2, -1)}
-                  className="w-10 h-7 bg-[#2a2a4a] hover:bg-[#ffdd00] text-[#f0f0ff] hover:text-black border-2 border-black font-pixel text-xs font-black shadow-[1px_1px_0_0_#000] cursor-pointer"
-                >
-                  ▼
-                </button>
-              </div>
-
-              {/* DIAL 3 */}
-              <div className="flex flex-col items-center gap-1">
-                <button
-                  onClick={() => handleCycleDial(3, 1)}
-                  className="w-10 h-7 bg-[#2a2a4a] hover:bg-[#ffdd00] text-[#f0f0ff] hover:text-black border-2 border-black font-pixel text-xs font-black shadow-[1px_1px_0_0_#000] cursor-pointer"
-                >
-                  ▲
-                </button>
-                <div className="w-14 h-14 bg-black border-3 border-[#ffdd00] flex items-center justify-center font-heading font-black text-2xl text-[#ffdd00]">
-                  {ALPHABET[dial3]}
-                </div>
-                <button
-                  onClick={() => handleCycleDial(3, -1)}
-                  className="w-10 h-7 bg-[#2a2a4a] hover:bg-[#ffdd00] text-[#f0f0ff] hover:text-black border-2 border-black font-pixel text-xs font-black shadow-[1px_1px_0_0_#000] cursor-pointer"
-                >
-                  ▼
-                </button>
-              </div>
-            </div>
-
+            {/* OBJECT 2: ELZZUP PORTRAIT */}
             <button
-              disabled={isProcessing}
-              onClick={handleEngageOverride}
-              className="w-full py-2.5 bg-[#ffdd00] hover:bg-[#ffee44] text-black border-3 border-black font-heading font-black text-xs sm:text-sm uppercase shadow-[3px_3px_0_0_#000] active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+              id="env-picture-frame"
+              onClick={() => {
+                soundEngine.playClick(soundEnabled);
+                setRevealedPicture(true);
+              }}
+              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors"
             >
-              <CheckCircle2 size={16} />
-              ENGAGE GATE OVERRIDE
+              <div className="text-2xl group-hover:-rotate-12 transition-transform">🖼️</div>
+              <span className="text-[10px] font-mono text-slate-400">Portrait</span>
+              {revealedPicture ? (
+                <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-700">
+                  Digit 2 = 6
+                </span>
+              ) : (
+                <span className="text-[9px] font-mono text-slate-500">(Click to tilt)</span>
+              )}
             </button>
-          </div>
-        )}
 
-        {/* Progressive Hint Drawer */}
-        <div className="w-full bg-[#101026] border-2 border-black p-2 flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 font-mono text-[10px] text-[#ffdd00] font-bold uppercase">
-              <HelpCircle size={13} />
-              <span>STAGE {currentStage} RELUCTANT GUIDANCE</span>
-            </div>
+            {/* OBJECT 3: WALL THERMOSTAT */}
             <button
-              onClick={handleCycleHint}
-              className="px-2 py-0.5 bg-[#2a2a4a] hover:bg-[#ffdd00] text-[#f0f0ff] hover:text-black font-pixel text-[10px] font-black uppercase border border-black cursor-pointer transition-colors shadow-[1px_1px_0_0_#000]"
+              id="env-thermostat"
+              onClick={() => {
+                soundEngine.playClick(soundEnabled);
+                setRevealedThermostat(true);
+              }}
+              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors"
             >
-              {hintLevel === 0
-                ? 'REVEAL HINT 1'
-                : hintLevel === 1
-                ? 'REVEAL HINT 2'
-                : hintLevel === 2
-                ? 'REVEAL HINT 3'
-                : 'CYCLE HINTS'}
+              <div className="text-2xl group-hover:scale-110 transition-transform">🌡️</div>
+              <span className="text-[10px] font-mono text-slate-400">Thermostat</span>
+              {revealedThermostat ? (
+                <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-700">
+                  Digit 3 = 9
+                </span>
+              ) : (
+                <span className="text-[9px] font-mono text-slate-500">(Click to check)</span>
+              )}
             </button>
           </div>
 
-          {hintLevel > 0 && (
-            <div className="bg-[#080816] border border-[#ffdd00] p-2 text-left font-mono text-[11px] text-[#f0f0ff] animate-fadeIn">
-              <span className="font-bold text-[#ffdd00] mr-1.5">
-                {HINTS[currentStage][hintLevel - 1].title}:
-              </span>
-              <span>{HINTS[currentStage][hintLevel - 1].text}</span>
+          {/* THE 3-DIGIT DIALS & LEVER */}
+          <div className="flex flex-col items-center gap-4 bg-slate-950 p-6 rounded-xl border-2 border-slate-700 shadow-xl">
+            <div className="flex items-center gap-4">
+              {[
+                { label: 'DIAL 1', val: dial1, num: 1 as const },
+                { label: 'DIAL 2', val: dial2, num: 2 as const },
+                { label: 'DIAL 3', val: dial3, num: 3 as const },
+              ].map((d) => (
+                <div key={d.num} className="flex flex-col items-center gap-1">
+                  <span className="text-[10px] font-mono text-slate-500 font-bold">{d.label}</span>
+                  <button
+                    id={`safe-dial-${d.num}`}
+                    onClick={() => handleDialClick(d.num)}
+                    className="w-14 h-16 bg-slate-800 hover:bg-slate-700 border-2 border-amber-500/60 rounded-lg flex items-center justify-center text-2xl font-mono font-black text-amber-300 shadow-inner active:scale-95 transition-transform"
+                  >
+                    {d.val}
+                  </button>
+                  <span className="text-[9px] font-mono text-slate-600">▲ click</span>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Victory Overlay Modal */}
-      {victoryPhase !== 'idle' && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-fade-in">
-          <div
-            className="absolute inset-0 pointer-events-none opacity-30"
-            style={{
-              backgroundImage:
-                'repeating-linear-gradient(0deg, transparent, transparent 2px, #00f0ff 2px, #00f0ff 4px)',
-            }}
-          />
-
-          <div className="relative z-10 max-w-md w-full bg-[#1a1a3a] border-8 border-black p-6 shadow-[0_0_30px_rgba(255,221,0,0.4),8px_8px_0_0_#000] flex flex-col items-center text-center">
-            {victoryPhase === 'freeze' && (
-              <div className="py-8 font-mono text-sm text-[#ffdd00] font-black uppercase animate-pulse">
-                [ CIPHER ACCEPTED // OPTICAL BYPASS AUTHENTICATED ]
-              </div>
-            )}
-
-            {(victoryPhase === 'cleared' || victoryPhase === 'elzzup-reaction') && (
-              <div className="flex flex-col items-center my-4 animate-fadeIn">
-                <div className="font-mono text-xs text-[#44ff44] font-black tracking-widest uppercase mb-1 flex items-center gap-1.5">
-                  <CheckCircle2 size={16} />
-                  CHAMBER_18 // ACCESS GRANTED
-                </div>
-                <h1 className="font-heading font-black text-4xl sm:text-5xl text-[#ffdd00] uppercase tracking-tight drop-shadow-[3px_3px_0_#000]">
-                  FLOOR 18
-                </h1>
-                <h2 className="font-heading font-black text-2xl sm:text-3xl text-white uppercase tracking-widest mt-1 drop-shadow-[2px_2px_0_#000]">
-                  CLEARED
-                </h2>
-              </div>
-            )}
-
-            {victoryPhase === 'elzzup-reaction' && (
-              <div className="bg-[#0c0c1e] border-2 border-[#ffdd00] p-3 mt-3 w-full animate-fadeIn shadow-[2px_2px_0_0_#000]">
-                <div className="font-pixel text-[10px] text-[#ffdd00] uppercase font-bold mb-1">
-                  ELZZUP:
-                </div>
-                <p className="font-dialogue text-xs sm:text-sm text-[#c0c0e8] font-bold">
-                  "...Wait. You actually dismantled the alarm AND overlapped the optical wavelengths?! ...Fine. Floor 19 won't be that generous."
-                </p>
-              </div>
-            )}
+            {/* PULL LEVER BUTTON */}
+            <motion.button
+              id="pull-safe-lever-btn"
+              onClick={handlePullSafeLever}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full py-3 px-6 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-mono font-black text-sm rounded-lg shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Lock className="w-4 h-4" />
+              PULL VAULT LEVER
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
