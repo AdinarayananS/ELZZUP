@@ -450,19 +450,19 @@ export const FinalVictory: React.FC<FinalVictoryProps> = ({ onBackToMenu, soundE
               <div className="grid grid-cols-2 gap-3 w-full mb-2">
                 <div className="bg-[#080816] border-2 border-black p-2.5 flex flex-col items-center">
                   <span className="font-heading font-black text-xl text-[#44ff44]">20</span>
-                  <span className="font-mono text-[10px] text-[#a0a0d0] uppercase font-bold">FLOORS</span>
+                  <span className="font-mono text-[11px] text-[#e0e0ff] uppercase font-black">FLOORS</span>
                 </div>
                 <div className="bg-[#080816] border-2 border-black p-2.5 flex flex-col items-center">
                   <span className="font-heading font-black text-xl text-[#ff4444]">1</span>
-                  <span className="font-mono text-[10px] text-[#a0a0d0] uppercase font-bold">TRICKSTER</span>
+                  <span className="font-mono text-[11px] text-[#e0e0ff] uppercase font-black">TRICKSTER</span>
                 </div>
                 <div className="bg-[#080816] border-2 border-black p-2.5 flex flex-col items-center">
                   <span className="font-heading font-black text-xl text-[#ff8888]">COUNTLESS</span>
-                  <span className="font-mono text-[10px] text-[#a0a0d0] uppercase font-bold">MISTAKES</span>
+                  <span className="font-mono text-[11px] text-[#e0e0ff] uppercase font-black">MISTAKES</span>
                 </div>
                 <div className="bg-[#080816] border-2 border-black p-2.5 flex flex-col items-center">
                   <span className="font-heading font-black text-xl text-[#ffdd00]">1</span>
-                  <span className="font-mono text-[10px] text-[#a0a0d0] uppercase font-bold">TRUE VICTORY</span>
+                  <span className="font-mono text-[11px] text-[#e0e0ff] uppercase font-black">TRUE VICTORY</span>
                 </div>
               </div>
             </div>
@@ -498,7 +498,7 @@ export const FinalVictory: React.FC<FinalVictoryProps> = ({ onBackToMenu, soundE
               <h1 className="font-heading font-black text-3xl sm:text-4xl text-[#ffdd00] uppercase tracking-tight drop-shadow-[3px_3px_0_#000] mb-1">
                 YOU WIN.
               </h1>
-              <p className="font-mono text-xs text-[#a0a0d0] uppercase font-bold tracking-wider mb-6">
+              <p className="font-mono text-xs text-[#e0e0ff] uppercase font-bold tracking-wider mb-6">
                 THE GAUNTLET IS COMPLETE.
               </p>
 
@@ -513,7 +513,7 @@ export const FinalVictory: React.FC<FinalVictoryProps> = ({ onBackToMenu, soundE
                 RETURN TO MAIN MENU
               </PixelButton>
 
-              <p className="font-mono text-[10px] text-[#7777aa] mt-3 font-bold">
+              <p className="font-mono text-xs text-[#a0a0d0] mt-3 font-bold">
                 [ 100% CLEAN EXIT // PROGRESS PRESERVED ]
               </p>
             </div>

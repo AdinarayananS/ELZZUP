@@ -8,17 +8,30 @@ interface Room17Props {
   onTroll: (customTitle?: string, customMessage?: string) => void;
   soundEnabled: boolean;
   onHintRequest?: (hint: string) => void;
+  onSetObjective?: (objective: string | null) => void;
 }
 
 export const Room17: React.FC<Room17Props> = ({
   onSuccess,
   onTroll,
   soundEnabled,
+  onSetObjective,
 }) => {
   // Stage 1: The Obvious Button
   // Stage 2: The Suspicious Shuffle (Cat vs TNT) with randomized order
   // Stage 3: Move Out of the Way, Elzzup!
   const [stage, setStage] = useState<1 | 2 | 3>(1);
+
+  // Synchronize clear objective for every stage
+  useEffect(() => {
+    if (stage === 1) {
+      onSetObjective?.('Bypass the security lockdown to unlock the next stage.');
+    } else if (stage === 2) {
+      onSetObjective?.('Pick the safe container to retrieve the chamber key.');
+    } else if (stage === 3) {
+      onSetObjective?.('Clear the doorway and press the exit button.');
+    }
+  }, [stage, onSetObjective]);
 
   // Stage 1 State
   const [holdingButton, setHoldingButton] = useState(false);
@@ -245,8 +258,8 @@ export const Room17: React.FC<Room17Props> = ({
             >
               <div className="text-white font-mono font-black text-center text-sm md:text-base drop-shadow-md leading-tight">
                 DO NOT CLICK
-                <span className="block text-[10px] text-red-200 font-normal mt-1">
-                  (HOLD 2 SECONDS)
+                <span className="block text-[11px] text-amber-300 font-bold mt-1">
+                  [ OVERRIDE TERMINAL ]
                 </span>
               </div>
 
@@ -259,14 +272,14 @@ export const Room17: React.FC<Room17Props> = ({
             </motion.button>
 
             {/* HOLD PROGRESS BAR */}
-            <div className="w-48 h-3 bg-slate-800 border border-slate-600 rounded-full overflow-hidden">
+            <div className="w-48 h-3.5 bg-slate-950 border border-slate-600 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-amber-500 to-green-400"
                 style={{ width: `${holdProgress}%` }}
               />
             </div>
-            <p className="text-[11px] font-mono text-slate-400">
-              {holdingButton ? `Overriding... ${holdProgress}%` : 'Hold to satisfy your urge.'}
+            <p className="text-xs font-mono text-slate-200 font-bold">
+              {holdingButton ? `Overriding... ${holdProgress}%` : 'Hold to engage override.'}
             </p>
           </div>
         </motion.div>
@@ -283,7 +296,7 @@ export const Room17: React.FC<Room17Props> = ({
             <h3 className="text-lg md:text-xl font-bold font-mono text-amber-400 tracking-wider">
               📦 STAGE 17.2: THE SUSPICIOUS SHUFFLE
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
               "One box holds the key. The other two are armed with cartoon TNT. Good luck!" — Elzzup
             </p>
           </div>
@@ -372,8 +385,8 @@ export const Room17: React.FC<Room17Props> = ({
             })}
           </div>
 
-          <p className="text-xs font-mono text-slate-400 text-center">
-            Tip: Listen closely... one of these boxes isn't full of explosives.
+          <p className="text-xs font-mono text-slate-200 text-center font-medium">
+            Listen closely... one of these boxes isn't armed with explosives.
           </p>
         </motion.div>
       )}
@@ -389,7 +402,7 @@ export const Room17: React.FC<Room17Props> = ({
             <h3 className="text-lg md:text-xl font-bold font-mono text-emerald-400 tracking-wider">
               🚪 STAGE 17.3: THE EXIT DOOR
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
               "The exit is right there. Too bad I'm standing right in front of it." — Elzzup
             </p>
           </div>
@@ -406,7 +419,7 @@ export const Room17: React.FC<Room17Props> = ({
               className={`w-48 py-4 px-6 rounded-lg font-mono font-black text-sm tracking-wider flex items-center justify-center gap-2 transition-all ${
                 doorUnlocked
                   ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.7)] cursor-pointer'
-                  : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                  : 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
               }`}
             >
               <CheckCircle2 className="w-5 h-5 text-amber-300" />
@@ -444,8 +457,8 @@ export const Room17: React.FC<Room17Props> = ({
                     {elzzupPokes === 1 && 'ELZZUP: "HEY! STOP POKING ME!"'}
                     {elzzupPokes === 2 && 'ELZZUP: "WOAH THAT TICKLES! STOP!"'}
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400 mt-1">
-                    (Click / poke Elzzup to move him)
+                  <span className="text-xs font-mono text-slate-300 mt-1 font-semibold">
+                    [ Chamber transit path obstructed ]
                   </span>
                 </motion.div>
               )}

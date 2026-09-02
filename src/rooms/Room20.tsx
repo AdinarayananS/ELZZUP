@@ -8,12 +8,14 @@ interface Room20Props {
   onTroll: (customTitle?: string, customMessage?: string) => void;
   soundEnabled: boolean;
   onHintRequest?: (hint: string) => void;
+  onSetObjective?: (objective: string | null) => void;
 }
 
 export const Room20: React.FC<Room20Props> = ({
   onSuccess,
   onTroll,
   soundEnabled,
+  onSetObjective,
 }) => {
   // Phase 1 (20.1): Tri-Elemental Boss Shields [HARD]
   // Phase 2 (20.2): The Instant Win Trophy Bait [RAGE-BAIT]
@@ -21,6 +23,21 @@ export const Room20: React.FC<Room20Props> = ({
   // Phase 4 (20.4): Fake Blue Screen of Death Crash [RAGE-BAIT]
   // Phase 5 (20.5): The True Name Reversal (ELZZUP -> PUZZLE) [FINAL]
   const [phase, setPhase] = useState<1 | 2 | 3 | 4 | 5>(1);
+
+  // Synchronize phase objectives with the main objective HUD banner
+  React.useEffect(() => {
+    if (phase === 1) {
+      onSetObjective?.("Strike Elzzup's three elemental shields in order.");
+    } else if (phase === 2) {
+      onSetObjective?.('Choose the true path forward to advance the battle.');
+    } else if (phase === 3) {
+      onSetObjective?.('Input the harmonic glyph sequence to destabilize the core.');
+    } else if (phase === 4) {
+      onSetObjective?.('Recover the system from the emergency crash.');
+    } else if (phase === 5) {
+      onSetObjective?.('Reorder the letters to destroy Elzzup once and for all.');
+    }
+  }, [phase, onSetObjective]);
 
   // --- PHASE 1 STATE (Tri-Elemental Counter) ---
   // Elzzup shields in order: Fire -> Water -> Lightning
@@ -77,7 +94,7 @@ export const Room20: React.FC<Room20Props> = ({
     setTrophyTrapped(true);
     onTroll(
       'AHAHAHA! IN ROOM 20?!',
-      'You really thought there was a free Instant Win Trophy in the final boss battle?! Click "NO THANKS, I\'LL FIGHT FAIR"!'
+      'You really thought there was a free Instant Win Trophy in the final boss battle?! A true challenger never takes the bait!'
     );
   };
 
@@ -98,7 +115,7 @@ export const Room20: React.FC<Room20Props> = ({
       soundEngine.playMemeLaugh(soundEnabled);
       onTroll(
         'Glyph Parity Mismatch!',
-        'Follow the reverse harmonic cycle: Circle -> Triangle -> Diamond -> Star.'
+        'Harmonic parity error! Invert the core frequency sequence.'
       );
       setPlayerGlyphSeq([]);
       return;
@@ -116,7 +133,7 @@ export const Room20: React.FC<Room20Props> = ({
     soundEngine.playMemeLaugh(soundEnabled);
     onTroll(
       'It\'s a Fake Crash!',
-      `You clicked "${option}"! Look closely at the bottom of the blue screen: there's a loose power cable sparking!`
+      `You clicked "${option}"! Don't panic over an error screen—check your hardware!`
     );
   };
 
@@ -137,8 +154,8 @@ export const Room20: React.FC<Room20Props> = ({
       soundEngine.playTroll(soundEnabled);
       soundEngine.playMemeLaugh(soundEnabled);
       onTroll(
-        'Incorrect Spelling!',
-        `To defeat ELZZUP, you must spell his true identity: P - U - Z - Z - L - E!`
+        'Incorrect Sequence!',
+        'To defeat ELZZUP, reorder his name to reveal his true counterpart!'
       );
       setSpelledLetters([]);
       setUsedTileIndices([]);
@@ -189,7 +206,7 @@ export const Room20: React.FC<Room20Props> = ({
             <h3 className="text-lg md:text-xl font-bold font-mono text-red-400 tracking-wider">
               🛡️ PHASE 20.1: BREAK ELZZUP'S ELEMENTAL ARMOR
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
               "My shields are rotating: 🔥 Fire, 💧 Water, ⚡ Lightning. Counter each in order!"
             </p>
           </div>
@@ -198,24 +215,24 @@ export const Room20: React.FC<Room20Props> = ({
           <div className="flex items-center justify-center gap-6 py-4">
             <div className="flex flex-col items-center p-3 bg-red-950/40 border border-red-500/60 rounded-lg">
               <span className="text-2xl">🔥</span>
-              <span className="text-[10px] font-mono text-red-400 font-bold">1. FIRE</span>
+              <span className="text-[10px] font-mono text-red-300 font-bold">1. FIRE</span>
             </div>
             <div className="flex flex-col items-center p-3 bg-blue-950/40 border border-blue-500/60 rounded-lg">
               <span className="text-2xl">💧</span>
-              <span className="text-[10px] font-mono text-blue-400 font-bold">2. WATER</span>
+              <span className="text-[10px] font-mono text-blue-300 font-bold">2. WATER</span>
             </div>
             <div className="flex flex-col items-center p-3 bg-amber-950/40 border border-amber-500/60 rounded-lg">
               <span className="text-2xl">⚡</span>
-              <span className="text-[10px] font-mono text-amber-400 font-bold">3. LIGHTNING</span>
+              <span className="text-[10px] font-mono text-amber-300 font-bold">3. LIGHTNING</span>
             </div>
           </div>
 
           {/* PLAYER'S COUNTER RUNES */}
           <div className="grid grid-cols-3 gap-4 w-full max-w-md">
             {[
-              { name: 'WATER', icon: '💧', label: 'WATER RUNE', bg: 'bg-blue-600 hover:bg-blue-500 border-blue-400' },
-              { name: 'LIGHTNING', icon: '⚡', label: 'LIGHTNING RUNE', bg: 'bg-amber-600 hover:bg-amber-500 border-amber-400' },
-              { name: 'FIRE', icon: '🔥', label: 'FIRE RUNE', bg: 'bg-red-600 hover:bg-red-500 border-red-400' },
+              { name: 'WATER', icon: '💧', label: 'WATER RUNE', bg: 'bg-blue-600 hover:bg-blue-500 border-blue-400 text-white' },
+              { name: 'LIGHTNING', icon: '⚡', label: 'LIGHTNING RUNE', bg: 'bg-amber-600 hover:bg-amber-500 border-amber-400 text-white' },
+              { name: 'FIRE', icon: '🔥', label: 'FIRE RUNE', bg: 'bg-red-600 hover:bg-red-500 border-red-400 text-white' },
             ].map((rune) => (
               <motion.button
                 key={rune.name}
@@ -231,7 +248,7 @@ export const Room20: React.FC<Room20Props> = ({
             ))}
           </div>
 
-          <div className="text-xs font-mono text-slate-400">
+          <div className="text-xs font-mono text-slate-300 font-semibold">
             Current Strikes: {phase1Counters.join(' ➔ ') || '[ Ready for strike 1... ]'}
           </div>
         </motion.div>
@@ -248,7 +265,7 @@ export const Room20: React.FC<Room20Props> = ({
             <h3 className="text-lg md:text-xl font-bold font-mono text-amber-400 tracking-wider">
               🏆 PHASE 20.2: ELZZUP SURRENDERS?!
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
               "Okay okay, I give up! You win! Just press this shiny golden button to finish the game right now!" — Elzzup
             </p>
           </div>
@@ -272,7 +289,7 @@ export const Room20: React.FC<Room20Props> = ({
           <button
             id="fight-fair-btn"
             onClick={handleFightFairClick}
-            className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 hover:border-amber-400 font-mono text-xs rounded-lg transition-colors cursor-pointer"
+            className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-amber-400 font-mono text-xs rounded-lg transition-colors cursor-pointer font-bold"
           >
             🛡️ "No thanks, I'll fight fair and finish Phase 3."
           </button>
@@ -290,17 +307,17 @@ export const Room20: React.FC<Room20Props> = ({
             <h3 className="text-lg md:text-xl font-bold font-mono text-indigo-400 tracking-wider">
               ✨ PHASE 20.3: REVERSE HARMONIC GLYPH MATRIX
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
               "My core pulses Star ➔ Diamond ➔ Triangle ➔ Circle. Invert the polarity to overload it!"
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-md">
             {[
-              { id: 'CIRCLE', icon: <Circle className="w-6 h-6" />, label: 'CIRCLE', bg: 'bg-red-600 hover:bg-red-500' },
-              { id: 'TRIANGLE', icon: <Triangle className="w-6 h-6" />, label: 'TRIANGLE', bg: 'bg-emerald-600 hover:bg-emerald-500' },
-              { id: 'DIAMOND', icon: <Diamond className="w-6 h-6" />, label: 'DIAMOND', bg: 'bg-cyan-600 hover:bg-cyan-500' },
-              { id: 'STAR', icon: <Star className="w-6 h-6" />, label: 'STAR', bg: 'bg-amber-500 hover:bg-amber-400' },
+              { id: 'CIRCLE', icon: <Circle className="w-6 h-6" />, label: 'CIRCLE', bg: 'bg-red-600 hover:bg-red-500 text-white' },
+              { id: 'TRIANGLE', icon: <Triangle className="w-6 h-6" />, label: 'TRIANGLE', bg: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+              { id: 'DIAMOND', icon: <Diamond className="w-6 h-6" />, label: 'DIAMOND', bg: 'bg-cyan-600 hover:bg-cyan-500 text-white' },
+              { id: 'STAR', icon: <Star className="w-6 h-6" />, label: 'STAR', bg: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black' },
             ].map((g) => (
               <motion.button
                 key={g.id}
@@ -316,7 +333,7 @@ export const Room20: React.FC<Room20Props> = ({
             ))}
           </div>
 
-          <div className="text-xs font-mono text-slate-400">
+          <div className="text-xs font-mono text-slate-300 font-semibold">
             Inverted Sequence: {playerGlyphSeq.join(' ➔ ') || '[ Awaiting glyph 1... ]'}
           </div>
         </motion.div>
@@ -340,7 +357,7 @@ export const Room20: React.FC<Room20Props> = ({
             <p>
               * Press REBOOT to reset your computer.<br />
               * Press UNINSTALL to quit.<br />
-              * Look for the loose sparking cable at the bottom to plug it back in.
+              * Restore physical system link to resume execution.
             </p>
           </div>
 
@@ -349,14 +366,14 @@ export const Room20: React.FC<Room20Props> = ({
             <button
               id="bsod-reboot-btn"
               onClick={() => handleBsodOptionClick('REBOOT')}
-              className="px-4 py-2 bg-blue-950 hover:bg-blue-800 text-white font-mono text-xs border border-white cursor-pointer"
+              className="px-4 py-2 bg-blue-950 hover:bg-blue-800 text-white font-mono text-xs border border-white cursor-pointer font-bold"
             >
               [ REBOOT SYSTEM ]
             </button>
             <button
               id="bsod-cry-btn"
               onClick={() => handleBsodOptionClick('CRY')}
-              className="px-4 py-2 bg-blue-950 hover:bg-blue-800 text-white font-mono text-xs border border-white cursor-pointer"
+              className="px-4 py-2 bg-blue-950 hover:bg-blue-800 text-white font-mono text-xs border border-white cursor-pointer font-bold"
             >
               [ CRY ]
             </button>
@@ -387,8 +404,8 @@ export const Room20: React.FC<Room20Props> = ({
             <h3 className="text-lg md:text-xl font-black font-mono text-amber-400 tracking-wider">
               👑 PHASE 20.5: THE TRUE IDENTITY OF ELZZUP
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-300 mt-1">
-              "My name is ELZZUP (PUZZLE backwards). Reorder my letters to destroy me forever!"
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
+              "You may know my name, but can you decipher what it truly spells? Reorder my letters to vanquish me!"
             </p>
           </div>
 
@@ -428,8 +445,8 @@ export const Room20: React.FC<Room20Props> = ({
             })}
           </div>
 
-          <p className="text-xs font-mono text-slate-400 text-center">
-            Click the letters in order: <span className="font-bold text-amber-400">P - U - Z - Z - L - E</span>
+          <p className="text-xs font-mono text-slate-200 text-center font-bold">
+            Select tiles in sequence to uncover the true name.
           </p>
         </motion.div>
       )}

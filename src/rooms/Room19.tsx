@@ -8,17 +8,30 @@ interface Room19Props {
   onTroll: (customTitle?: string, customMessage?: string) => void;
   soundEnabled: boolean;
   onHintRequest?: (hint: string) => void;
+  onSetObjective?: (objective: string | null) => void;
 }
 
 export const Room19: React.FC<Room19Props> = ({
   onSuccess,
   onTroll,
   soundEnabled,
+  onSetObjective,
 }) => {
   // Stage 1: The Fake Error Popup
   // Stage 2: The Runaway Slider (Overclock to 101%)
   // Stage 3: The "Terms & Conditions" Contract
   const [stage, setStage] = useState<1 | 2 | 3>(1);
+
+  // Synchronize stage objectives
+  React.useEffect(() => {
+    if (stage === 1) {
+      onSetObjective?.('Bypass the system crash to reveal the stage button.');
+    } else if (stage === 2) {
+      onSetObjective?.('Push the system power level to the maximum.');
+    } else if (stage === 3) {
+      onSetObjective?.('Resolve the contract terms to access the final chamber.');
+    }
+  }, [stage, onSetObjective]);
 
   // --- STAGE 1 STATE ---
   const [errorDismissed, setErrorDismissed] = useState(false);
@@ -40,7 +53,7 @@ export const Room19: React.FC<Room19Props> = ({
     soundEngine.playMemeLaugh(soundEnabled);
     onTroll(
       'Fell for the Fake Error!',
-      `You clicked "${action}" on a fake OS popup! Close the popup with the [X] or click the real button behind it!`
+      `You clicked "${action}" on a fake OS popup. Dismiss the error dialog to reach the controls.`
     );
   };
 
@@ -84,7 +97,7 @@ export const Room19: React.FC<Room19Props> = ({
       soundEngine.playMemeLaugh(soundEnabled);
       onTroll(
         'Contract Signed: You Lose!',
-        'You checked Elzzup\'s trick agreements! Scroll down in the terms box and check ONLY the rejection clause!'
+        'You agreed to Elzzup\'s trap terms! Carefully inspect all clauses before submitting.'
       );
       return;
     }
@@ -92,8 +105,8 @@ export const Room19: React.FC<Room19Props> = ({
     if (!rejectionChecked) {
       soundEngine.playTroll(soundEnabled);
       onTroll(
-        'Terms Not Rejected',
-        'You didn\'t reject the contract! Scroll to the very bottom of the legal terms to find the hidden clause.'
+        'Terms Not Resolved',
+        'Contract requirements not satisfied. Review the fine print thoroughly.'
       );
       return;
     }
@@ -273,8 +286,8 @@ export const Room19: React.FC<Room19Props> = ({
               )}
             </div>
 
-            <p className="text-[11px] font-mono text-slate-400 text-center">
-              Hint: Standard systems stop at 100%. Overclock to 101% to blow past Elzzup's defenses!
+            <p className="text-xs font-mono text-slate-200 text-center font-medium">
+              Overclock the power conduit to break past Elzzup's interference.
             </p>
           </div>
         </motion.div>
@@ -291,48 +304,48 @@ export const Room19: React.FC<Room19Props> = ({
             <h3 className="text-lg md:text-xl font-bold font-mono text-amber-400 tracking-wider">
               📜 STAGE 19.3: TERMS & CONDITIONS OF VICTORY
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
               "Before entering the Final Chamber, you MUST sign my totally fair terms." — Elzzup
             </p>
           </div>
 
           {/* SCROLLABLE CONTRACT BOX */}
-          <div className="w-full max-w-md max-h-48 overflow-y-auto bg-slate-950 p-4 rounded-lg border-2 border-slate-700 flex flex-col gap-3 font-mono text-xs text-slate-300 scrollbar-thin">
+          <div className="w-full max-w-md max-h-48 overflow-y-auto bg-slate-950 p-4 rounded-lg border-2 border-slate-700 flex flex-col gap-3 font-mono text-xs text-slate-200 scrollbar-thin">
             <div className="font-bold text-amber-400 border-b border-slate-800 pb-1">
               SECTION 1: ACKNOWLEDGMENT OF SUPREMACY
             </div>
-            <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-200 hover:text-white">
               <input
                 type="checkbox"
                 checked={trapChecked1}
                 onChange={(e) => setTrapChecked1(e.target.checked)}
-                className="accent-red-500"
+                className="accent-red-500 cursor-pointer"
               />
               <span>1.1 I acknowledge Elzzup is the smartest genius alive.</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-200 hover:text-white">
               <input
                 type="checkbox"
                 checked={trapChecked2}
                 onChange={(e) => setTrapChecked2(e.target.checked)}
-                className="accent-red-500"
+                className="accent-red-500 cursor-pointer"
               />
               <span>1.2 I agree to forfeit all remaining hints and dignity.</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-200 hover:text-white">
               <input
                 type="checkbox"
                 checked={trapChecked3}
                 onChange={(e) => setTrapChecked3(e.target.checked)}
-                className="accent-red-500"
+                className="accent-red-500 cursor-pointer"
               />
               <span>1.3 Instant Win Button (Do Not Uncheck).</span>
             </label>
 
-            <div className="h-8 flex items-center justify-center text-[10px] text-slate-600">
-              ▼ [ Scroll down for hidden legal clauses ] ▼
+            <div className="h-8 flex items-center justify-center text-xs font-mono text-amber-300 font-bold">
+              ▼ [ Scroll down for additional legal clauses ] ▼
             </div>
 
             <div className="border-t border-slate-800 pt-2">

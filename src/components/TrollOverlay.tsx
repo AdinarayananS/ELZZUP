@@ -58,12 +58,13 @@ export const TrollOverlay: React.FC<TrollOverlayProps> = ({
             {title}
           </h2>
 
-          <h3
-            className="font-heading font-bold text-sm sm:text-lg md:text-xl text-[#ffdd00] uppercase tracking-wider text-glitch mb-3 sm:mb-4"
-            data-text={subtitle}
-          >
-            {subtitle}
-          </h3>
+          {subtitle && (
+            <h3
+              className="font-pixel font-bold text-xs sm:text-base md:text-lg text-[#ffdd00] uppercase tracking-wide mb-3 sm:mb-4 drop-shadow-[1px_1px_0_#000] px-2 max-w-lg leading-snug"
+            >
+              {subtitle}
+            </h3>
+          )}
 
           {/* Subtext description */}
           <div className="bg-[#0c0c1e] border-2 border-black p-3 sm:p-4 mb-4 sm:mb-6 max-w-md w-full shadow-[2px_2px_0_0_#000]">

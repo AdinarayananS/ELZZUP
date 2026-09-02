@@ -73,9 +73,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [overlayData, setOverlayData] = useState<OverlayData>({});
   const [showHint, setShowHint] = useState(false);
   const [elzzupReaction, setElzzupReaction] = useState<string | null>(null);
+  const [currentObjective, setCurrentObjective] = useState<string | null>(null);
 
   const reactionTimeoutRef = useRef<number | null>(null);
   const roomDef = getRoomById(currentRoomId);
+
+  // Reset stage objective when room changes
+  useEffect(() => {
+    setCurrentObjective(null);
+  }, [currentRoomId]);
 
   // Helper to trigger a readable ELZZUP remark
   const triggerReaction = (text: string, durationMs?: number) => {
@@ -153,6 +159,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setOverlay('none');
     setShowHint(false);
     setIsGlitching(false);
+    setCurrentObjective(null);
     antiSpam.resetSpam();
     sound.playClick(settings.sound);
 
@@ -270,6 +277,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setOverlay('none');
     setResetCount(0);
     setRoomErrors(0);
+    setCurrentObjective(null);
     antiSpam.resetSpam();
     onRoomComplete(currentRoomId);
   };
@@ -360,13 +368,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
 
         {/* Crisp Instruction Objective Banner */}
-        <div className="w-full max-w-4xl z-20 flex justify-center">
-          <div className="bg-[#1a1a3a] border-2 sm:border-3 border-black px-4 sm:px-6 py-2 shadow-[3px_3px_0_0_#ffdd00] flex items-center justify-center gap-2 sm:gap-3 max-w-lg w-full text-center">
-            <span className="font-mono text-[9px] sm:text-[10px] text-black font-extrabold uppercase tracking-wider bg-[#ffdd00] px-1.5 py-0.5 border border-black shrink-0 shadow-[1px_1px_0_0_#000]">
+        <div className="w-full max-w-4xl z-20 flex justify-center px-2">
+          <div className="bg-[#0c0c1e] border-2 sm:border-3 border-[#ffdd00] px-4 sm:px-6 py-2 shadow-[3px_3px_0_0_#000] flex items-center justify-center gap-2 sm:gap-3 max-w-2xl w-full text-center">
+            <span className="font-mono text-[9px] sm:text-[10px] text-black font-extrabold uppercase tracking-wider bg-[#ffdd00] px-2 py-0.5 border border-black shrink-0 shadow-[1px_1px_0_0_#000]">
               OBJECTIVE
             </span>
-            <p className="font-heading font-extrabold text-xs sm:text-sm text-[#f0f0ff] uppercase tracking-wide leading-tight drop-shadow-[1px_1px_0_#000]">
-              {roomDef.instruction}
+            <p className="font-pixel font-bold text-xs sm:text-sm text-white uppercase tracking-wide leading-snug drop-shadow-[1px_1px_0_#000]">
+              {currentObjective || roomDef.instruction}
             </p>
           </div>
         </div>
@@ -387,6 +395,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             onSuccess={handleSuccess}
             onTroll={handleTroll}
             soundEnabled={settings.sound}
+            onSetObjective={setCurrentObjective}
           />
 
           {/* Anti-Spam Hidden Interaction Reaction & Lockout Overlay */}
@@ -400,10 +409,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
         {/* Hint Toast Popup */}
         {showHint && roomDef.hint && (
-          <div className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md bg-[#2a2a4a] border-4 border-black p-3 sm:p-4 shadow-[4px_4px_0_0_#ffdd00] animate-bounce">
-            <div className="flex items-start justify-between gap-2">
+          <div className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md bg-[#0c0c1e] border-3 sm:border-4 border-[#ffdd00] p-4 shadow-[6px_6px_0_0_#000] animate-fadeIn">
+            <div className="flex items-start justify-between gap-2 pb-2 border-b-2 border-black">
               <div className="flex items-center gap-2 text-[#ffdd00] font-heading font-bold text-xs sm:text-sm uppercase">
-                <Lightbulb size={16} />
+                <Lightbulb size={16} className="text-[#ffdd00]" />
                 <span>HINT SYSTEM:</span>
               </div>
               <button
@@ -413,7 +422,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 <X size={16} />
               </button>
             </div>
-            <p className="font-mono text-xs sm:text-sm text-[#f0f0ff] mt-2">
+            <p className="font-mono text-xs sm:text-sm text-[#f0f0ff] mt-2.5 leading-relaxed font-medium">
               {roomDef.hint}
             </p>
           </div>

@@ -8,17 +8,30 @@ interface Room18Props {
   onTroll: (customTitle?: string, customMessage?: string) => void;
   soundEnabled: boolean;
   onHintRequest?: (hint: string) => void;
+  onSetObjective?: (objective: string | null) => void;
 }
 
 export const Room18: React.FC<Room18Props> = ({
   onSuccess,
   onTroll,
   soundEnabled,
+  onSetObjective,
 }) => {
   // Stage 1: The Power Breaker & Overheated Fan
   // Stage 2: Opposite Day Inversion (Reverse sequence)
   // Stage 3: The Interactive Environment Combination Safe
   const [stage, setStage] = useState<1 | 2 | 3>(1);
+
+  // Synchronize clear stage objectives
+  React.useEffect(() => {
+    if (stage === 1) {
+      onSetObjective?.('Charge the main capacitor to 100% power.');
+    } else if (stage === 2) {
+      onSetObjective?.('Input the correct four-color sequence.');
+    } else if (stage === 3) {
+      onSetObjective?.('Find the 3-digit combination and unlock the vault.');
+    }
+  }, [stage, onSetObjective]);
 
   // --- STAGE 1 STATE ---
   const [pluggedIn, setPluggedIn] = useState(false);
@@ -162,43 +175,43 @@ export const Room18: React.FC<Room18Props> = ({
             <h3 className="text-lg md:text-xl font-bold font-mono text-indigo-400 tracking-wider">
               ⚡ STAGE 18.1: CHARGE THE MAIN CAPACITOR TO 100%
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
-              "Plug in the power cable, but warning: this industrial cooling fan draws WAY too much juice!"
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
+              "Connect power to the capacitor, but watch out: auxiliary appliances are drawing current!"
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-around gap-6 w-full max-w-md bg-slate-950/80 p-6 rounded-lg border border-slate-800">
             {/* POWER OUTLET & PLUG */}
             <div className="flex flex-col items-center gap-3">
-              <span className="text-xs font-mono font-bold text-slate-300">
+              <span className="text-xs font-mono font-bold text-slate-200">
                 WALL OUTLET
               </span>
               <button
                 id="power-cord-button"
                 onClick={togglePlug}
-                className={`px-4 py-3 rounded-lg border-2 font-mono text-xs font-bold transition-all flex items-center gap-2 ${
+                className={`px-4 py-3 rounded-lg border-2 font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   pluggedIn
                     ? 'bg-amber-600 border-amber-400 text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]'
-                    : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-amber-400'
+                    : 'bg-slate-800 border-slate-600 text-slate-300 hover:border-amber-400'
                 }`}
               >
-                <Zap className={`w-4 h-4 ${pluggedIn ? 'text-amber-300' : 'text-slate-500'}`} />
+                <Zap className={`w-4 h-4 ${pluggedIn ? 'text-amber-300' : 'text-slate-400'}`} />
                 {pluggedIn ? '🔌 CORD: PLUGGED IN' : '🔌 CORD: UNPLUGGED'}
               </button>
             </div>
 
             {/* INDUSTRIAL COOLING FAN */}
             <div className="flex flex-col items-center gap-3">
-              <span className="text-xs font-mono font-bold text-slate-300">
+              <span className="text-xs font-mono font-bold text-slate-200">
                 COOLING FAN
               </span>
               <button
                 id="fan-toggle-button"
                 onClick={toggleFan}
-                className={`px-4 py-3 rounded-lg border-2 font-mono text-xs font-bold transition-all flex items-center gap-2 ${
+                className={`px-4 py-3 rounded-lg border-2 font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   fanRunning
                     ? 'bg-cyan-950 border-cyan-500 text-cyan-300'
-                    : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-400'
+                    : 'bg-slate-800 border-slate-600 text-slate-300 hover:border-slate-400'
                 }`}
               >
                 <motion.div
@@ -214,9 +227,9 @@ export const Room18: React.FC<Room18Props> = ({
 
           {/* POWER CHARGE BAR */}
           <div className="w-full max-w-md flex flex-col gap-2">
-            <div className="flex justify-between text-xs font-mono text-slate-300">
-              <span>BATTERY LEVEL:</span>
-              <span className={powerProgress === 100 ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
+            <div className="flex justify-between text-xs font-mono text-slate-200 font-bold">
+              <span>CAPACITOR CHARGE:</span>
+              <span className={powerProgress === 100 ? 'text-emerald-400 font-black' : 'text-amber-400 font-bold'}>
                 {powerProgress}%
               </span>
             </div>
@@ -229,8 +242,8 @@ export const Room18: React.FC<Room18Props> = ({
               />
             </div>
             {pluggedIn && fanRunning && (
-              <span className="text-[11px] font-mono text-red-400 text-center animate-pulse">
-                ⚠️ Fan is consuming 70% power! Turn it off to reach 100%!
+              <span className="text-xs font-mono text-amber-300 font-bold text-center animate-pulse">
+                ⚠️ Auxiliary appliance load detected! Isolate the circuit to reach 100%!
               </span>
             )}
           </div>
@@ -279,13 +292,13 @@ export const Room18: React.FC<Room18Props> = ({
           </div>
 
           {/* PROGRESS DISPLAY */}
-          <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
-            <span>INPUT:</span>
+          <div className="flex items-center gap-2 font-mono text-xs text-slate-200">
+            <span className="font-bold">INPUT:</span>
             {playerSequence.length === 0 ? (
-              <span className="text-slate-600">[ Waiting for first reversed button... ]</span>
+              <span className="text-slate-400">[ Awaiting input sequence... ]</span>
             ) : (
               playerSequence.map((c, i) => (
-                <span key={i} className="bg-slate-800 text-slate-200 px-2 py-0.5 rounded border border-slate-700 font-bold">
+                <span key={i} className="bg-slate-800 text-amber-300 px-2.5 py-0.5 rounded border border-slate-600 font-bold">
                   {c}
                 </span>
               ))
@@ -305,8 +318,8 @@ export const Room18: React.FC<Room18Props> = ({
             <h3 className="text-lg md:text-xl font-bold font-mono text-amber-400 tracking-wider">
               🔐 STAGE 18.3: THE 3-DIGIT COMBINATION VAULT
             </h3>
-            <p className="text-xs md:text-sm font-mono text-slate-400 mt-1">
-              "The 3 secret digits are hidden somewhere in this room. Click around to find them!"
+            <p className="text-xs md:text-sm font-mono text-slate-200 mt-1 font-medium">
+              "The 3 secret digits are hidden somewhere in this room. Search your surroundings!"
             </p>
           </div>
 
@@ -319,16 +332,16 @@ export const Room18: React.FC<Room18Props> = ({
                 soundEngine.playClick(soundEnabled);
                 setRevealedCoffee(true);
               }}
-              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors"
+              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors cursor-pointer"
             >
               <div className="text-2xl group-hover:rotate-12 transition-transform">☕</div>
-              <span className="text-[10px] font-mono text-slate-400">Coffee Mug</span>
+              <span className="text-xs font-mono text-slate-200 font-semibold">Coffee Mug</span>
               {revealedCoffee ? (
-                <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-700">
+                <span className="text-xs font-mono font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-700">
                   Digit 1 = 3
                 </span>
               ) : (
-                <span className="text-[9px] font-mono text-slate-500">(Click to tip)</span>
+                <span className="text-[10px] font-mono text-slate-300 font-semibold">(Inspect)</span>
               )}
             </button>
 
@@ -339,16 +352,16 @@ export const Room18: React.FC<Room18Props> = ({
                 soundEngine.playClick(soundEnabled);
                 setRevealedPicture(true);
               }}
-              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors"
+              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors cursor-pointer"
             >
               <div className="text-2xl group-hover:-rotate-12 transition-transform">🖼️</div>
-              <span className="text-[10px] font-mono text-slate-400">Portrait</span>
+              <span className="text-xs font-mono text-slate-200 font-semibold">Portrait</span>
               {revealedPicture ? (
-                <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-700">
+                <span className="text-xs font-mono font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-700">
                   Digit 2 = 6
                 </span>
               ) : (
-                <span className="text-[9px] font-mono text-slate-500">(Click to tilt)</span>
+                <span className="text-[10px] font-mono text-slate-300 font-semibold">(Inspect)</span>
               )}
             </button>
 
@@ -359,16 +372,16 @@ export const Room18: React.FC<Room18Props> = ({
                 soundEngine.playClick(soundEnabled);
                 setRevealedThermostat(true);
               }}
-              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors"
+              className="bg-slate-950 p-3 rounded-lg border border-slate-700 hover:border-amber-400 flex flex-col items-center gap-1 group transition-colors cursor-pointer"
             >
               <div className="text-2xl group-hover:scale-110 transition-transform">🌡️</div>
-              <span className="text-[10px] font-mono text-slate-400">Thermostat</span>
+              <span className="text-xs font-mono text-slate-200 font-semibold">Thermostat</span>
               {revealedThermostat ? (
-                <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-700">
+                <span className="text-xs font-mono font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-700">
                   Digit 3 = 9
                 </span>
               ) : (
-                <span className="text-[9px] font-mono text-slate-500">(Click to check)</span>
+                <span className="text-[10px] font-mono text-slate-300 font-semibold">(Inspect)</span>
               )}
             </button>
           </div>
@@ -382,15 +395,15 @@ export const Room18: React.FC<Room18Props> = ({
                 { label: 'DIAL 3', val: dial3, num: 3 as const },
               ].map((d) => (
                 <div key={d.num} className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] font-mono text-slate-500 font-bold">{d.label}</span>
+                  <span className="text-xs font-mono text-slate-200 font-bold">{d.label}</span>
                   <button
                     id={`safe-dial-${d.num}`}
                     onClick={() => handleDialClick(d.num)}
-                    className="w-14 h-16 bg-slate-800 hover:bg-slate-700 border-2 border-amber-500/60 rounded-lg flex items-center justify-center text-2xl font-mono font-black text-amber-300 shadow-inner active:scale-95 transition-transform"
+                    className="w-14 h-16 bg-slate-800 hover:bg-slate-700 border-2 border-amber-500/60 rounded-lg flex items-center justify-center text-2xl font-mono font-black text-amber-300 shadow-inner active:scale-95 transition-transform cursor-pointer"
                   >
                     {d.val}
                   </button>
-                  <span className="text-[9px] font-mono text-slate-600">▲ click</span>
+                  <span className="text-[10px] font-mono text-slate-300 font-semibold">▲ click</span>
                 </div>
               ))}
             </div>

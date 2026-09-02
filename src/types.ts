@@ -6,6 +6,7 @@ export interface RoomComponentProps {
   roomKey: number;
   soundEnabled: boolean;
   onInteract?: () => void;
+  onSetObjective?: (objective: string | null) => void;
 }
 
 export interface RoomDefinition {
